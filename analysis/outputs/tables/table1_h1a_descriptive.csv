@@ -1,0 +1,21 @@
+Statistic,Value,Benchmark
+N (valid changes),772,NA
+"N (excluded, 0->positive)",76,NA
+Minimum,-1,NA
+Maximum,11,NA
+Mean,-0.06505366395262768,NA
+Standard Deviation,0.5909532559306241,NA
+Skewness,9.623919323172391,0 (symmetric)
+"Kurtosis (raw, benchmark=3)",170.26095450465954,3 (normal)
+Excess Kurtosis (benchmark=0),167.26095450465954,0 (normal)
+"L-kurtosis (tau_4, benchmark=0.123)",0.646317736238905,0.1226 (normal)
+Shapiro-Wilk W,0.2990387300004198,NA
+Shapiro-Wilk p-value,5.571996261225695e-47,<0.05 rejects normality
+t-fit: mu (location),6.470997349498902e-10,NA
+t-fit: SE(mu),NA,NA
+t-fit: sigma (scale),1.0000000395907187e-6,NA
+t-fit: SE(sigma),NA,NA
+t-fit: nu (df),1.0100000329311358,<5: extreme; >30: normal-like
+t-fit: SE(nu),NA,NA
+t-fit: Log-likelihood,6712.795457854785,NA
+t-fit: AIC,-13419.59091570957,NA

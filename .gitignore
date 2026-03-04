@@ -1,0 +1,5 @@
+# R intermediate files
+*.RData
+.Rhistory
+.RData
+.Rproj.user
