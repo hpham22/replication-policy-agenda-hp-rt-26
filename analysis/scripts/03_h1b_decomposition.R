@@ -94,33 +94,34 @@ cat("Peripheral observations:", length(periph_pct), "\n")
 cat("Total pooled:           ", length(pooled_pct), "\n")
 
 # Function to compute all distributional stats for a group
+# (Fernandez-i-Marin et al. approach: sigma^2 = incrementalism, nu = punctuation)
 compute_group_stats <- function(x, label) {
   n <- length(x)
   cat(sprintf("\n--- %s (n = %d) ---\n", label, n))
 
-  # Descriptive
   cat(sprintf("  Mean: %.4f, SD: %.4f\n", mean(x), sd(x)))
   cat(sprintf("  Min: %.4f, Max: %.4f\n", min(x), max(x)))
 
-  # Kurtosis
   raw_kurt <- calc_kurtosis_raw(x)
   excess_kurt <- calc_kurtosis_excess(x)
   cat(sprintf("  Raw kurtosis: %.4f (benchmark=3)\n", raw_kurt))
 
-  # L-kurtosis
   lm_result <- calc_lmoments(x)
   lkurt <- as.numeric(lm_result$ratios["tau4"])
   cat(sprintf("  L-kurtosis: %.4f (benchmark=0.1226)\n", lkurt))
 
-  # Shapiro-Wilk
   sw <- shapiro.test(x)
   cat(sprintf("  Shapiro-Wilk W: %.6f, p: %.6e\n", sw$statistic, sw$p.value))
 
-  # T-distribution fit
-  tfit <- fit_location_scale_t(x, label = label)
+  tfit <- fit_location_scale_t(x, label = label, do_bootstrap = TRUE)
   if (!is.na(tfit$mu)) {
-    cat(sprintf("  t-fit: mu=%.4f, sigma=%.4f, nu=%.4f (%s)\n",
-                tfit$mu, tfit$sigma, tfit$nu, tfit$note))
+    cat(sprintf("  t-fit: mu=%.6f, sigma=%.6f, sigma^2=%.6f, nu=%.4f\n",
+                tfit$mu, tfit$sigma, tfit$sigma_sq, tfit$nu))
+    cat(sprintf("  sigma 95%% CI: [%.6f, %.6f]\n", tfit$sigma_ci_lo, tfit$sigma_ci_hi))
+    cat(sprintf("  nu 95%% CI: [%.4f, %.4f]\n", tfit$nu_ci_lo, tfit$nu_ci_hi))
+    cat(sprintf("  Theo var: %s | %s\n",
+                if (is.infinite(tfit$theo_var)) "Inf" else sprintf("%.6f", tfit$theo_var),
+                tfit$interpretation))
   } else {
     cat(sprintf("  t-fit: FAILED (%s)\n", tfit$note))
   }
@@ -137,13 +138,17 @@ compute_group_stats <- function(x, label) {
     Shapiro_Wilk_p = sw$p.value,
     t_mu = tfit$mu,
     t_sigma = tfit$sigma,
+    t_sigma_sq = tfit$sigma_sq,
     t_nu = tfit$nu,
-    t_se_mu = tfit$se_mu,
-    t_se_sigma = tfit$se_sigma,
-    t_se_nu = tfit$se_nu,
+    t_theo_var = ifelse(is.null(tfit$theo_var), NA, tfit$theo_var),
+    t_sigma_ci_lo = tfit$sigma_ci_lo,
+    t_sigma_ci_hi = tfit$sigma_ci_hi,
+    t_nu_ci_lo = tfit$nu_ci_lo,
+    t_nu_ci_hi = tfit$nu_ci_hi,
     t_loglik = tfit$loglik,
     t_method = tfit$method,
-    t_note = tfit$note
+    t_note = tfit$note,
+    t_interpretation = tfit$interpretation
   )
 }
 
@@ -156,6 +161,14 @@ table3 <- bind_rows(stats_aggregate, stats_core, stats_peripheral)
 table3_path <- file.path(tables_dir, "table3_core_peripheral_comparison.csv")
 write_csv(table3, table3_path)
 verify_output(table3_path)
+
+# Save the fitted parameters for the overlay figure and unified table
+tfit_results <- list(
+  aggregate  = list(stats = stats_aggregate, data = pooled_pct),
+  core       = list(stats = stats_core, data = core_pct),
+  peripheral = list(stats = stats_peripheral, data = periph_pct)
+)
+save(tfit_results, file = file.path(tables_dir, "tfit_results.RData"))
 
 # ============================================================================
 # Step 2.3: Variance decomposition
@@ -313,5 +326,94 @@ ggsave(fig2_pdf, fig2, width = 9, height = 7)
 
 verify_output(fig2_png)
 verify_output(fig2_pdf)
+
+# ============================================================================
+# Step 2.6: Fitted t-distribution overlay figure
+# ============================================================================
+cat("\n--- Step 2.6: Fitted t-distribution overlay ---\n")
+
+# Build density curves for each group using their MLE parameters
+x_plot <- seq(-2, 5, length.out = 1000)
+
+overlay_data <- list()
+groups_info <- list(
+  list(label = "Aggregate",  stats = stats_aggregate,  color = "black"),
+  list(label = "Core",       stats = stats_core,       color = "steelblue"),
+  list(label = "Peripheral", stats = stats_peripheral, color = "firebrick")
+)
+
+for (g in groups_info) {
+  mu_g    <- g$stats$t_mu[1]
+  sigma_g <- g$stats$t_sigma[1]
+  nu_g    <- g$stats$t_nu[1]
+  if (!is.na(mu_g) && !is.na(sigma_g) && sigma_g > 1e-4) {
+    dens <- dlst(x_plot, mu = mu_g, sigma = sigma_g, nu = nu_g)
+    overlay_data[[g$label]] <- tibble(
+      x = x_plot, density = dens, Group = g$label
+    )
+  } else if (!is.na(mu_g)) {
+    # Degenerate fit (sigma near 0): show empirical density instead
+    cat(sprintf("  %s: sigma=%.2e (degenerate), using empirical density\n",
+                g$label, sigma_g))
+    emp_data <- if (g$label == "Aggregate") pooled_pct
+                else if (g$label == "Core") core_pct
+                else periph_pct
+    dens_est <- tryCatch(
+      density(emp_data, bw = "SJ", n = 1000, from = -2, to = 5),
+      error = function(e) tryCatch(
+        density(emp_data, bw = "nrd0", n = 1000, from = -2, to = 5),
+        error = function(e2) NULL
+      )
+    )
+    if (!is.null(dens_est)) {
+      overlay_data[[g$label]] <- tibble(
+        x = dens_est$x, density = dens_est$y,
+        Group = paste0(g$label, " (empirical)")
+      )
+    } else {
+      cat(sprintf("  %s: density estimation failed, skipping\n", g$label))
+    }
+  }
+}
+
+if (length(overlay_data) > 0) {
+  overlay_combined <- bind_rows(overlay_data)
+
+  fig_overlay <- ggplot(overlay_combined, aes(x = x, y = density, color = Group)) +
+    geom_line(linewidth = 1) +
+    scale_color_manual(values = c(
+      "Aggregate" = "black", "Core" = "steelblue", "Peripheral" = "firebrick",
+      "Aggregate (empirical)" = "black",
+      "Core (empirical)" = "steelblue",
+      "Peripheral (empirical)" = "firebrick"
+    )) +
+    labs(
+      x = "Annual Percentage Change",
+      y = "Density",
+      title = "Fitted t-Distributions: Aggregate vs. Core vs. Peripheral",
+      subtitle = paste0(
+        sprintf("Core: sigma=%.4f, nu=%.2f | ",
+                stats_core$t_sigma[1], stats_core$t_nu[1]),
+        sprintf("Peripheral: sigma=%.4f, nu=%.2f",
+                stats_peripheral$t_sigma[1], stats_peripheral$t_nu[1])
+      ),
+      color = "Group"
+    ) +
+    coord_cartesian(xlim = c(-2, 4)) +
+    theme_minimal(base_size = 12) +
+    theme(
+      plot.title = element_text(face = "bold", size = 13),
+      legend.position = "bottom"
+    )
+
+  fig_ov_png <- file.path(figures_dir, "fig_tfit_overlay.png")
+  fig_ov_pdf <- file.path(figures_dir, "fig_tfit_overlay.pdf")
+  ggsave(fig_ov_png, fig_overlay, width = 8, height = 5, dpi = 300, device = agg_png)
+  ggsave(fig_ov_pdf, fig_overlay, width = 8, height = 5)
+  verify_output(fig_ov_png)
+  verify_output(fig_ov_pdf)
+} else {
+  cat("  No valid fits to overlay.\n")
+}
 
 cat("\n03_h1b_decomposition.R completed.\n")

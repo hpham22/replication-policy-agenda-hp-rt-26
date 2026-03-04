@@ -240,22 +240,91 @@ rlst <- function(n, mu = 0, sigma = 1, nu = 5) {
   mu + sigma * rt(n, df = nu)
 }
 
-#' Fit location-scale t-distribution via MLE using fitdistrplus
-#' Falls back to manual optim if fitdist fails
-#' @param x Numeric vector
-#' @param label Character label for warnings
-#' @return list with mu, sigma, nu, se_mu, se_sigma, se_nu, loglik, aic, bic, method, note
-fit_location_scale_t <- function(x, label = "data") {
+#' Empty t-fit result (used for insufficient data or failed fits)
+empty_tfit <- function(note = "failed") {
+  list(
+    mu = NA, sigma = NA, nu = NA, sigma_sq = NA, theo_var = NA,
+    se_mu = NA, se_sigma = NA, se_nu = NA,
+    sigma_ci_lo = NA, sigma_ci_hi = NA,
+    nu_ci_lo = NA, nu_ci_hi = NA,
+    loglik = NA, aic = NA, bic = NA,
+    method = "none", note = note
+  )
+}
+
+#' Compute theoretical variance of location-scale t
+#' Var = sigma^2 * nu / (nu - 2) when nu > 2; Inf when nu <= 2
+compute_theo_var <- function(sigma, nu) {
+  if (is.na(sigma) || is.na(nu)) return(NA_real_)
+  if (nu <= 2) return(Inf)
+  sigma^2 * nu / (nu - 2)
+}
+
+#' Bootstrap CIs for t-distribution parameters
+#' Nonparametric bootstrap: resample data, re-fit, extract sigma and nu
+#' @param x Original data vector
+#' @param nboot Number of bootstrap resamples
+#' @return list with sigma_ci (lo, hi), nu_ci (lo, hi)
+bootstrap_t_ci <- function(x, nboot = 1000) {
+  n <- length(x)
+  sigma_boot <- numeric(nboot)
+  nu_boot    <- numeric(nboot)
+  success    <- 0L
+
+  neg_loglik_boot <- function(par, data) {
+    mu <- par[1]; sigma <- exp(par[2]); nu <- exp(par[3])
+    z <- (data - mu) / sigma
+    -sum(dt(z, df = nu, log = TRUE)) + length(data) * log(sigma)
+  }
+
+  for (b in seq_len(nboot)) {
+    x_boot <- sample(x, n, replace = TRUE)
+    opt <- tryCatch({
+      optim(
+        par = c(median(x_boot), log(max(mad(x_boot), 0.001)), log(3)),
+        fn = neg_loglik_boot, data = x_boot,
+        method = "Nelder-Mead",
+        control = list(maxit = 5000)
+      )
+    }, error = function(e) NULL)
+
+    if (!is.null(opt) && opt$convergence == 0) {
+      success <- success + 1L
+      sigma_boot[success] <- exp(opt$par[2])
+      nu_boot[success]    <- exp(opt$par[3])
+    }
+  }
+
+  if (success < 50) {
+    return(list(
+      sigma_ci = c(lo = NA_real_, hi = NA_real_),
+      nu_ci    = c(lo = NA_real_, hi = NA_real_),
+      n_success = success
+    ))
+  }
+
+  sigma_valid <- sigma_boot[seq_len(success)]
+  nu_valid    <- nu_boot[seq_len(success)]
+
+  list(
+    sigma_ci = quantile(sigma_valid, c(0.025, 0.975)),
+    nu_ci    = quantile(nu_valid, c(0.025, 0.975)),
+    n_success = success
+  )
+}
+
+#' Fit location-scale t-distribution via MLE (Fernandez-i-Marin et al.)
+#' Reports mu, sigma, sigma^2, nu, theoretical variance, and bootstrap CIs
+#' @param x Numeric vector of percentage changes
+#' @param label Character label for diagnostics
+#' @param do_bootstrap Whether to compute bootstrap CIs (default TRUE)
+#' @param nboot Number of bootstrap resamples (default 1000)
+fit_location_scale_t <- function(x, label = "data", do_bootstrap = TRUE, nboot = 1000) {
   x <- x[!is.na(x)]
   n <- length(x)
 
   if (n < 10) {
-    return(list(
-      mu = NA, sigma = NA, nu = NA,
-      se_mu = NA, se_sigma = NA, se_nu = NA,
-      loglik = NA, aic = NA, bic = NA,
-      method = "none", note = paste("insufficient data (n =", n, ")")
-    ))
+    return(empty_tfit(paste("insufficient data (n =", n, ")")))
   }
 
   # Multiple starting value sets
@@ -265,7 +334,6 @@ fit_location_scale_t <- function(x, label = "data") {
     list(mu = mean(x),   sigma = sd(x),             nu = 10),
     list(mu = median(x), sigma = IQR(x) / 1.35,     nu = 30)
   )
-  # Ensure sigma > 0
   start_list <- lapply(start_list, function(s) {
     s$sigma <- max(s$sigma, 0.01)
     s
@@ -292,70 +360,107 @@ fit_location_scale_t <- function(x, label = "data") {
     }
   }
 
+  # Extract MLE estimates
+  mu_hat <- sigma_hat <- nu_hat <- NA_real_
+  se_mu <- se_sigma <- se_nu <- NA_real_
+  ll <- aic_val <- bic_val <- NA_real_
+  method <- "none"
+  fit_note <- "failed"
+
   if (!is.null(best_fit)) {
-    s <- summary(best_fit)
-    return(list(
-      mu = best_fit$estimate["mu"],
-      sigma = best_fit$estimate["sigma"],
-      nu = best_fit$estimate["nu"],
-      se_mu = best_fit$sd["mu"],
-      se_sigma = best_fit$sd["sigma"],
-      se_nu = best_fit$sd["nu"],
-      loglik = best_fit$loglik,
-      aic = best_fit$aic,
-      bic = best_fit$bic,
-      method = "fitdist",
-      note = "converged",
-      fit_object = best_fit
-    ))
+    mu_hat    <- unname(best_fit$estimate["mu"])
+    sigma_hat <- unname(best_fit$estimate["sigma"])
+    nu_hat    <- unname(best_fit$estimate["nu"])
+    se_mu     <- unname(best_fit$sd["mu"])
+    se_sigma  <- unname(best_fit$sd["sigma"])
+    se_nu     <- unname(best_fit$sd["nu"])
+    ll        <- best_fit$loglik
+    aic_val   <- best_fit$aic
+    bic_val   <- best_fit$bic
+    method    <- "fitdist"
+    fit_note  <- "converged"
+  } else {
+    # Fallback: manual optim with reparametrization
+    neg_loglik <- function(par) {
+      mu <- par[1]; sigma <- exp(par[2]); nu <- exp(par[3])
+      z <- (x - mu) / sigma
+      -sum(dt(z, df = nu, log = TRUE)) + n * log(sigma)
+    }
+    opt <- tryCatch({
+      optim(
+        par = c(median(x), log(max(mad(x), 0.01)), log(5)),
+        fn = neg_loglik,
+        method = "Nelder-Mead",
+        hessian = TRUE,
+        control = list(maxit = 10000)
+      )
+    }, error = function(e) NULL)
+
+    if (!is.null(opt) && opt$convergence == 0) {
+      mu_hat    <- opt$par[1]
+      sigma_hat <- exp(opt$par[2])
+      nu_hat    <- exp(opt$par[3])
+      ll        <- -opt$value
+      aic_val   <- 2 * 3 - 2 * ll
+      bic_val   <- log(n) * 3 - 2 * ll
+      method    <- "optim_fallback"
+      fit_note  <- "converged via optim"
+
+      se_vec <- tryCatch({
+        vcov <- solve(opt$hessian)
+        se_raw <- sqrt(pmax(diag(vcov), 0))
+        c(se_raw[1], sigma_hat * se_raw[2], nu_hat * se_raw[3])
+      }, error = function(e) rep(NA_real_, 3))
+      se_mu <- se_vec[1]; se_sigma <- se_vec[2]; se_nu <- se_vec[3]
+    }
   }
 
-  # Fallback: manual optim
-  neg_loglik <- function(par) {
-    mu <- par[1]; sigma <- exp(par[2]); nu <- exp(par[3])
-    z <- (x - mu) / sigma
-    -sum(dt(z, df = nu, log = TRUE)) + n * log(sigma)
+  if (is.na(mu_hat)) {
+    return(empty_tfit(paste("fitting failed for", label)))
   }
 
-  opt <- tryCatch({
-    optim(
-      par = c(median(x), log(max(mad(x), 0.01)), log(5)),
-      fn = neg_loglik,
-      method = "Nelder-Mead",
-      hessian = TRUE,
-      control = list(maxit = 10000)
-    )
-  }, error = function(e) NULL)
+  # Derived quantities
+  sigma_sq <- sigma_hat^2
+  theo_var <- compute_theo_var(sigma_hat, nu_hat)
 
-  if (!is.null(opt) && opt$convergence == 0) {
-    mu_hat    <- opt$par[1]
-    sigma_hat <- exp(opt$par[2])
-    nu_hat    <- exp(opt$par[3])
-    ll        <- -opt$value
+  # Bootstrap CIs
+  sigma_ci_lo <- sigma_ci_hi <- nu_ci_lo <- nu_ci_hi <- NA_real_
+  boot_note <- ""
+  if (do_bootstrap && n >= 20) {
+    cat(sprintf("    Bootstrapping %s (n=%d, %d resamples)...", label, n, nboot))
+    boot_res <- bootstrap_t_ci(x, nboot = nboot)
+    cat(sprintf(" %d/%d converged\n", boot_res$n_success, nboot))
+    sigma_ci_lo <- unname(boot_res$sigma_ci["2.5%"])
+    sigma_ci_hi <- unname(boot_res$sigma_ci["97.5%"])
+    nu_ci_lo    <- unname(boot_res$nu_ci["2.5%"])
+    nu_ci_hi    <- unname(boot_res$nu_ci["97.5%"])
+    if (boot_res$n_success < 50) boot_note <- "; bootstrap unreliable"
+  } else if (do_bootstrap && n < 20) {
+    boot_note <- "; n too small for bootstrap"
+  }
 
-    se <- tryCatch({
-      vcov <- solve(opt$hessian)
-      se_raw <- sqrt(pmax(diag(vcov), 0))
-      c(se_raw[1], sigma_hat * se_raw[2], nu_hat * se_raw[3])
-    }, error = function(e) rep(NA_real_, 3))
-
-    return(list(
-      mu = mu_hat, sigma = sigma_hat, nu = nu_hat,
-      se_mu = se[1], se_sigma = se[2], se_nu = se[3],
-      loglik = ll,
-      aic = 2 * 3 - 2 * ll,
-      bic = log(n) * 3 - 2 * ll,
-      method = "optim_fallback",
-      note = "converged via optim"
-    ))
+  # Build interpretation note
+  interp <- ""
+  if (nu_hat <= 2) {
+    interp <- "infinite variance (extreme punctuation)"
+  } else if (nu_hat < 5) {
+    interp <- "very heavy tails (extreme punctuations)"
+  } else if (nu_hat < 30) {
+    interp <- "moderate heavy tails"
+  } else {
+    interp <- "approaches normal"
   }
 
   list(
-    mu = NA, sigma = NA, nu = NA,
-    se_mu = NA, se_sigma = NA, se_nu = NA,
-    loglik = NA, aic = NA, bic = NA,
-    method = "none",
-    note = paste("fitting failed for", label)
+    mu = mu_hat, sigma = sigma_hat, sigma_sq = sigma_sq,
+    nu = nu_hat, theo_var = theo_var,
+    se_mu = se_mu, se_sigma = se_sigma, se_nu = se_nu,
+    sigma_ci_lo = sigma_ci_lo, sigma_ci_hi = sigma_ci_hi,
+    nu_ci_lo = nu_ci_lo, nu_ci_hi = nu_ci_hi,
+    loglik = ll, aic = aic_val, bic = bic_val,
+    method = method,
+    note = paste0(fit_note, boot_note),
+    interpretation = interp
   )
 }
 

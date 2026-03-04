@@ -45,12 +45,21 @@ table3 <- read_csv(file.path(tables_dir, "table3_core_peripheral_comparison.csv"
                    show_col_types = FALSE)
 table4 <- read_csv(file.path(tables_dir, "table4_year_type_comparison.csv"),
                    show_col_types = FALSE)
+tfit_comp <- read_csv(file.path(tables_dir, "table_tfit_comparison.csv"),
+                      show_col_types = FALSE)
 
 # Build summary
 get_val <- function(stat) {
   row <- table1 %>% filter(Statistic == stat)
-  if (nrow(row) == 0) return(NA_real_)
+  if (nrow(row) == 0) return(NA)
   row$Value[1]
+}
+
+# Helper to format numbers, handling NA and character values
+fmt_num <- function(x, digits = 4) {
+  x_num <- suppressWarnings(as.numeric(x))
+  if (is.na(x_num)) return(as.character(x))
+  formatC(x_num, format = "f", digits = digits)
 }
 
 summary_lines <- c(
@@ -83,22 +92,28 @@ summary_lines <- c(
   "",
   "## H1a: Aggregate Punctuated Equilibrium",
   "",
-  sprintf("- **N valid percentage changes:** %d", get_val("N (valid changes)")),
-  sprintf("- **Mean:** %.4f", get_val("Mean")),
-  sprintf("- **SD:** %.4f", get_val("Standard Deviation")),
-  sprintf("- **Skewness:** %.4f", get_val("Skewness")),
-  sprintf("- **Raw kurtosis:** %.4f (benchmark = 3)", get_val("Kurtosis (raw, benchmark=3)")),
-  sprintf("- **Excess kurtosis:** %.4f", get_val("Excess Kurtosis (benchmark=0)")),
-  sprintf("- **L-kurtosis (tau_4):** %.4f (benchmark = 0.1226)",
-          get_val("L-kurtosis (tau_4, benchmark=0.123)")),
-  sprintf("- **Shapiro-Wilk W:** %.6f, p = %.2e",
-          get_val("Shapiro-Wilk W"), get_val("Shapiro-Wilk p-value")),
-  sprintf("- **t-fit mu:** %.4f (SE = %.4f)",
-          get_val("t-fit: mu (location)"), get_val("t-fit: SE(mu)")),
-  sprintf("- **t-fit sigma:** %.4f (SE = %.4f)",
-          get_val("t-fit: sigma (scale)"), get_val("t-fit: SE(sigma)")),
-  sprintf("- **t-fit nu:** %.4f (SE = %.4f)",
-          get_val("t-fit: nu (df)"), get_val("t-fit: SE(nu)")),
+  sprintf("- **N valid percentage changes:** %s", get_val("N (valid changes)")),
+  sprintf("- **Mean:** %s", fmt_num(get_val("Mean"))),
+  sprintf("- **SD:** %s", fmt_num(get_val("Standard Deviation"))),
+  sprintf("- **Skewness:** %s", fmt_num(get_val("Skewness"))),
+  sprintf("- **Raw kurtosis:** %s (benchmark = 3)", fmt_num(get_val("Kurtosis (raw, benchmark=3)"))),
+  sprintf("- **Excess kurtosis:** %s", fmt_num(get_val("Excess Kurtosis (benchmark=0)"))),
+  sprintf("- **L-kurtosis (tau_4):** %s (benchmark = 0.1226)",
+          fmt_num(get_val("L-kurtosis (tau_4, benchmark=0.123)"))),
+  sprintf("- **Shapiro-Wilk W:** %s, p = %s",
+          fmt_num(get_val("Shapiro-Wilk W"), 6), get_val("Shapiro-Wilk p-value")),
+  sprintf("- **t-fit mu:** %s", fmt_num(get_val("t-fit: mu (location)"))),
+  sprintf("- **t-fit sigma:** %s [95%% CI: %s, %s]",
+          fmt_num(get_val("t-fit: sigma (scale)")),
+          fmt_num(get_val("t-fit: sigma 95% CI lo")),
+          fmt_num(get_val("t-fit: sigma 95% CI hi"))),
+  sprintf("- **t-fit sigma^2:** %s", fmt_num(get_val("t-fit: sigma^2"))),
+  sprintf("- **t-fit nu:** %s [95%% CI: %s, %s]",
+          fmt_num(get_val("t-fit: nu (df)")),
+          fmt_num(get_val("t-fit: nu 95% CI lo")),
+          fmt_num(get_val("t-fit: nu 95% CI hi"))),
+  sprintf("- **t-fit Theo. variance:** %s", get_val("t-fit: Theo. variance (sigma^2 * nu/(nu-2))")),
+  sprintf("- **Interpretation:** %s", get_val("t-fit: Interpretation")),
   "",
   "## H1b: Core-Periphery Decomposition",
   ""
@@ -111,11 +126,17 @@ for (i in seq_len(nrow(table3))) {
     sprintf("### %s (n = %d)", row$Group, row$N),
     sprintf("- Kurtosis: %.4f | L-kurtosis: %.4f", row$Raw_Kurtosis, row$L_Kurtosis),
     sprintf("- Shapiro-Wilk: W = %.6f, p = %.2e", row$Shapiro_Wilk_W, row$Shapiro_Wilk_p),
-    sprintf("- t-fit: mu = %.4f, sigma = %.4f, nu = %.4f (%s)",
-            ifelse(is.na(row$t_mu), NA, row$t_mu),
-            ifelse(is.na(row$t_sigma), NA, row$t_sigma),
-            ifelse(is.na(row$t_nu), NA, row$t_nu),
+    sprintf("- t-fit: mu = %s, sigma = %s, sigma^2 = %s, nu = %s (%s)",
+            fmt_num(row$t_mu, 6), fmt_num(row$t_sigma, 6),
+            fmt_num(row$t_sigma_sq, 6), fmt_num(row$t_nu, 4),
             row$t_note),
+    sprintf("- sigma 95%% CI: [%s, %s] | nu 95%% CI: [%s, %s]",
+            fmt_num(row$t_sigma_ci_lo, 6), fmt_num(row$t_sigma_ci_hi, 6),
+            fmt_num(row$t_nu_ci_lo, 4), fmt_num(row$t_nu_ci_hi, 4)),
+    sprintf("- Theo. variance: %s | %s",
+            if (!is.na(row$t_theo_var) && is.infinite(row$t_theo_var)) "Inf"
+            else fmt_num(row$t_theo_var, 6),
+            row$t_interpretation),
     ""
   )
 }
@@ -156,6 +177,40 @@ for (i in seq_len(nrow(table4))) {
   )
 }
 
+# Add t-distribution comparison table (Fernandez-i-Marin et al.)
+summary_lines <- c(summary_lines,
+  "## T-Distribution Decomposition (Fernandez-i-Marin et al.)",
+  "",
+  "The location-scale t-distribution separates two theoretically distinct dimensions:",
+  "- **sigma^2 (scale^2):** captures **incrementalism** — higher sigma^2 means larger routine changes",
+  "- **nu (degrees of freedom):** captures **punctuation** — lower nu means heavier tails, more extreme punctuations",
+  "",
+  "A system can be highly incremental (low sigma^2) AND highly punctuated (low nu) simultaneously.",
+  "Kurtosis alone conflates these two dimensions; the t-distribution separates them.",
+  "",
+  "### Unified Comparison (6 groups)",
+  ""
+)
+
+# Add each row from the unified comparison table
+for (i in seq_len(nrow(tfit_comp))) {
+  row <- tfit_comp[i, ]
+  theo_str <- if (!is.na(row$t_theo_var) && is.infinite(row$t_theo_var)) "Inf"
+              else fmt_num(row$t_theo_var, 6)
+  summary_lines <- c(summary_lines,
+    sprintf("**%s** (n = %d):", row$Group, row$N),
+    sprintf("- sigma = %s, sigma^2 = %s, nu = %s",
+            fmt_num(row$t_sigma, 6), fmt_num(row$t_sigma_sq, 6), fmt_num(row$t_nu, 4)),
+    sprintf("- sigma 95%% CI: [%s, %s] | nu 95%% CI: [%s, %s]",
+            fmt_num(row$t_sigma_ci_lo, 6), fmt_num(row$t_sigma_ci_hi, 6),
+            fmt_num(row$t_nu_ci_lo, 4), fmt_num(row$t_nu_ci_hi, 4)),
+    sprintf("- Theo. variance: %s | L-kurtosis: %s",
+            theo_str, fmt_num(row$L_Kurtosis, 4)),
+    sprintf("- Interpretation: %s (%s)", row$t_interpretation, row$t_note),
+    ""
+  )
+}
+
 # Add caveats
 summary_lines <- c(summary_lines,
   "## Caveats and Notes",
@@ -167,8 +222,11 @@ summary_lines <- c(summary_lines,
   "  This may reflect the pre-1995 pattern of sparse output rather than a milestone dynamic.",
   "- **2004-05 tsunami:** Trade integration output in 2004 (Framework Agreement annexes) is",
   "  not tsunami-related; disaster response (AADMER) appears in 2005.",
-  "- **Small-sample t-distribution:** If the peripheral t-distribution fit failed to converge,",
-  "  the kurtosis and L-kurtosis comparisons remain valid as distributional evidence.",
+  "- **T-distribution fitting:** The MLE fits may produce degenerate values (sigma near 0, nu at the",
+  "  lower bound of 1.01) when data contains large point masses (e.g., 83% zeros in pooled data).",
+  "  The continuous t-distribution cannot adequately model data with extreme point masses.",
+  "  The kurtosis and L-kurtosis provide complementary distributional evidence. Degenerate fits",
+  "  for peripheral areas honestly reflect the extreme bimodal {0, -1} pattern in peripheral attention.",
   ""
 )
 
@@ -188,12 +246,14 @@ expected_files <- c(
   file.path(tables_dir, "year_area_matrix.csv"),
   file.path(tables_dir, "matrix_data.RData"),
   file.path(tables_dir, "pct_changes.RData"),
+  file.path(tables_dir, "tfit_results.RData"),
   file.path(tables_dir, "table1_h1a_descriptive.csv"),
   file.path(tables_dir, "table2_area_descriptives.csv"),
   file.path(tables_dir, "table3_core_peripheral_comparison.csv"),
   file.path(tables_dir, "table3b_variance_decomposition.csv"),
   file.path(tables_dir, "table4_year_type_comparison.csv"),
   file.path(tables_dir, "table5_event_profiles.csv"),
+  file.path(tables_dir, "table_tfit_comparison.csv"),
   file.path(tables_dir, "appendix_sensitivity_1yr.csv"),
   file.path(figures_dir, "fig1_histogram_pct_changes.png"),
   file.path(figures_dir, "fig1_histogram_pct_changes.pdf"),
@@ -203,6 +263,8 @@ expected_files <- c(
   file.path(figures_dir, "fig3_output_by_year_type.pdf"),
   file.path(figures_dir, "fig4_hhi_peripheral_dotplot.png"),
   file.path(figures_dir, "fig4_hhi_peripheral_dotplot.pdf"),
+  file.path(figures_dir, "fig_tfit_overlay.png"),
+  file.path(figures_dir, "fig_tfit_overlay.pdf"),
   summary_path
 )
 

@@ -106,51 +106,25 @@ if (sw_test$p.value < 0.05) {
 # ============================================================================
 # Step 1.5: T-distribution fitting via MLE
 # ============================================================================
-cat("\n--- Step 1.5: T-distribution MLE fitting ---\n")
+cat("\n--- Step 1.5: T-distribution MLE fitting (Fernandez-i-Marin et al.) ---\n")
+cat("  sigma^2 = incrementalism (higher = less incremental)\n")
+cat("  nu = punctuation (lower = more extreme punctuations)\n\n")
 
-t_fit <- fit_location_scale_t(pooled_pct, label = "aggregate")
+t_fit <- fit_location_scale_t(pooled_pct, label = "aggregate", do_bootstrap = TRUE)
 
-cat(sprintf("  Method:        %s\n", t_fit$method))
-cat(sprintf("  Note:          %s\n", t_fit$note))
+cat(sprintf("  Method:          %s\n", t_fit$method))
+cat(sprintf("  Note:            %s\n", t_fit$note))
 if (!is.na(t_fit$mu)) {
-  cat(sprintf("  mu (location): %.4f  (SE = %.4f)\n", t_fit$mu, t_fit$se_mu))
-  cat(sprintf("  sigma (scale): %.4f  (SE = %.4f)\n", t_fit$sigma, t_fit$se_sigma))
-  cat(sprintf("  nu (df):       %.4f  (SE = %.4f)\n", t_fit$nu, t_fit$se_nu))
-  cat(sprintf("  Log-lik:       %.4f\n", t_fit$loglik))
-  cat(sprintf("  AIC:           %.4f\n", t_fit$aic))
-
-  # Interpretation
-  if (t_fit$nu < 5) {
-    cat("  -> nu < 5: Highly extreme punctuations (very heavy tails)\n")
-  } else if (t_fit$nu < 30) {
-    cat("  -> 5 <= nu < 30: Moderate heavy tails\n")
-  } else {
-    cat("  -> nu >= 30: Distribution approaches normal\n")
-  }
-}
-
-# Cross-check with manual optim
-cat("\n  Cross-check with manual optim():\n")
-neg_loglik_manual <- function(par) {
-  mu <- par[1]; sigma <- exp(par[2]); nu <- exp(par[3])
-  z <- (pooled_pct - mu) / sigma
-  -sum(dt(z, df = nu, log = TRUE)) + length(pooled_pct) * log(sigma)
-}
-
-opt_check <- tryCatch({
-  optim(
-    par = c(median(pooled_pct), log(max(mad(pooled_pct), 0.01)), log(5)),
-    fn = neg_loglik_manual,
-    method = "Nelder-Mead",
-    hessian = FALSE,
-    control = list(maxit = 10000)
-  )
-}, error = function(e) NULL)
-
-if (!is.null(opt_check) && opt_check$convergence == 0) {
-  cat(sprintf("    mu:    %.4f\n", opt_check$par[1]))
-  cat(sprintf("    sigma: %.4f\n", exp(opt_check$par[2])))
-  cat(sprintf("    nu:    %.4f\n", exp(opt_check$par[3])))
+  cat(sprintf("  mu (location):   %.6f\n", t_fit$mu))
+  cat(sprintf("  sigma (scale):   %.6f  [95%% CI: %.6f, %.6f]\n",
+              t_fit$sigma, t_fit$sigma_ci_lo, t_fit$sigma_ci_hi))
+  cat(sprintf("  sigma^2:         %.6f\n", t_fit$sigma_sq))
+  cat(sprintf("  nu (df):         %.4f  [95%% CI: %.4f, %.4f]\n",
+              t_fit$nu, t_fit$nu_ci_lo, t_fit$nu_ci_hi))
+  cat(sprintf("  Theo. variance:  %s\n",
+              if (is.infinite(t_fit$theo_var)) "Inf (nu <= 2)" else sprintf("%.6f", t_fit$theo_var)))
+  cat(sprintf("  Interpretation:  %s\n", t_fit$interpretation))
+  cat(sprintf("  Log-lik: %.4f  AIC: %.4f\n", t_fit$loglik, t_fit$aic))
 }
 
 # ============================================================================
@@ -167,23 +141,31 @@ table1 <- tibble(
     "Kurtosis (raw, benchmark=3)", "Excess Kurtosis (benchmark=0)",
     "L-kurtosis (tau_4, benchmark=0.123)",
     "Shapiro-Wilk W", "Shapiro-Wilk p-value",
-    "t-fit: mu (location)", "t-fit: SE(mu)",
-    "t-fit: sigma (scale)", "t-fit: SE(sigma)",
-    "t-fit: nu (df)", "t-fit: SE(nu)",
+    "t-fit: mu (location)",
+    "t-fit: sigma (scale)", "t-fit: sigma^2",
+    "t-fit: sigma 95% CI lo", "t-fit: sigma 95% CI hi",
+    "t-fit: nu (df)",
+    "t-fit: nu 95% CI lo", "t-fit: nu 95% CI hi",
+    "t-fit: Theo. variance (sigma^2 * nu/(nu-2))",
+    "t-fit: Interpretation",
     "t-fit: Log-likelihood", "t-fit: AIC"
   ),
-  Value = c(
+  Value = as.character(c(
     n_valid, n_excluded,
     min(pooled_pct), max(pooled_pct), mean(pooled_pct), sd(pooled_pct),
     calc_skewness(pooled_pct),
     raw_kurtosis, excess_kurtosis,
     as.numeric(l_kurtosis),
     sw_test$statistic, sw_test$p.value,
-    t_fit$mu, t_fit$se_mu,
-    t_fit$sigma, t_fit$se_sigma,
-    t_fit$nu, t_fit$se_nu,
+    t_fit$mu,
+    t_fit$sigma, t_fit$sigma_sq,
+    t_fit$sigma_ci_lo, t_fit$sigma_ci_hi,
+    t_fit$nu,
+    t_fit$nu_ci_lo, t_fit$nu_ci_hi,
+    ifelse(is.infinite(t_fit$theo_var), "Inf", t_fit$theo_var),
+    t_fit$interpretation,
     t_fit$loglik, t_fit$aic
-  ),
+  )),
   Benchmark = c(
     NA, NA,
     NA, NA, NA, NA,
@@ -191,9 +173,12 @@ table1 <- tibble(
     "3 (normal)", "0 (normal)",
     "0.1226 (normal)",
     NA, "<0.05 rejects normality",
+    NA,
+    "Lower = more incremental", "Lower = more incremental",
     NA, NA,
-    NA, NA,
-    "<5: extreme; >30: normal-like", NA,
+    "<5: extreme punctuation; >30: normal", NA, NA,
+    "Inf when nu<=2",
+    NA,
     NA, NA
   )
 )

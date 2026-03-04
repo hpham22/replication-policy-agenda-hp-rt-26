@@ -357,4 +357,111 @@ ggsave(fig4_pdf, fig4, width = 8, height = 5)
 verify_output(fig4_png)
 verify_output(fig4_pdf)
 
+# ============================================================================
+# Step 3.6: Year-type t-distribution fits (Fernandez-i-Marin et al.)
+# ============================================================================
+cat("\n--- Step 3.6: Year-type t-distribution fits ---\n")
+cat("  Classifying percentage changes by year_to (destination year)\n")
+cat("  2008 included in both crisis and milestone subsets\n\n")
+
+# Load pct changes data
+load(file.path(tables_dir, "pct_changes.RData"))
+
+# Classify year_to for each percentage change
+# Normal years: years with output that aren't crisis, milestone, or zero-output
+normal_years <- setdiff(ALL_YEARS[ALL_YEARS %in% matrix_wide$year[matrix_wide$total > 0]],
+                        c(CRISIS_YEARS, MILESTONE_YEARS, ZERO_YEARS))
+
+# Tag each percentage change with its year_to classification
+pct_with_type <- all_area_pct %>%
+  filter(!is.na(pct_change)) %>%
+  mutate(
+    is_crisis    = year_to %in% CRISIS_YEARS,
+    is_milestone = year_to %in% MILESTONE_YEARS,
+    is_normal    = year_to %in% normal_years
+  )
+
+# Extract subsets (2008 appears in both crisis and milestone)
+crisis_pct    <- pct_with_type %>% filter(is_crisis) %>% pull(pct_change)
+milestone_pct <- pct_with_type %>% filter(is_milestone) %>% pull(pct_change)
+normal_pct    <- pct_with_type %>% filter(is_normal) %>% pull(pct_change)
+
+cat(sprintf("  Crisis subset:    n = %d\n", length(crisis_pct)))
+cat(sprintf("  Milestone subset: n = %d\n", length(milestone_pct)))
+cat(sprintf("  Normal subset:    n = %d\n", length(normal_pct)))
+
+# Fit t-distributions for each year-type subset
+compute_yeartype_stats <- function(x, label) {
+  n <- length(x)
+  cat(sprintf("\n  --- %s (n = %d) ---\n", label, n))
+
+  lm_result <- calc_lmoments(x)
+  lkurt <- as.numeric(lm_result$ratios["tau4"])
+
+  tfit <- fit_location_scale_t(x, label = label, do_bootstrap = TRUE)
+  if (!is.na(tfit$mu)) {
+    cat(sprintf("    mu=%.6f, sigma=%.6f, sigma^2=%.6f, nu=%.4f\n",
+                tfit$mu, tfit$sigma, tfit$sigma_sq, tfit$nu))
+    cat(sprintf("    %s\n", tfit$interpretation))
+  } else {
+    cat(sprintf("    FAILED: %s\n", tfit$note))
+  }
+
+  tibble(
+    Group = label, N = n,
+    t_mu = tfit$mu, t_sigma = tfit$sigma, t_sigma_sq = tfit$sigma_sq,
+    t_nu = tfit$nu,
+    t_theo_var = ifelse(is.null(tfit$theo_var), NA, tfit$theo_var),
+    L_Kurtosis = lkurt,
+    t_sigma_ci_lo = tfit$sigma_ci_lo, t_sigma_ci_hi = tfit$sigma_ci_hi,
+    t_nu_ci_lo = tfit$nu_ci_lo, t_nu_ci_hi = tfit$nu_ci_hi,
+    t_loglik = tfit$loglik, t_method = tfit$method,
+    t_note = tfit$note, t_interpretation = tfit$interpretation
+  )
+}
+
+stats_crisis    <- compute_yeartype_stats(crisis_pct, "Crisis years")
+stats_milestone <- compute_yeartype_stats(milestone_pct, "Milestone years")
+stats_normal    <- compute_yeartype_stats(normal_pct, "Normal years")
+
+# ============================================================================
+# Build unified 6-row t-distribution comparison table
+# ============================================================================
+cat("\n--- Building unified t-distribution comparison table ---\n")
+
+# Load core/peripheral results from h1b
+load(file.path(tables_dir, "tfit_results.RData"))
+
+# Extract core/peripheral/aggregate rows in the same format
+format_tfit_row <- function(stats_df) {
+  stats_df %>%
+    select(Group, N, t_mu, t_sigma, t_sigma_sq, t_nu, t_theo_var,
+           L_Kurtosis, t_sigma_ci_lo, t_sigma_ci_hi,
+           t_nu_ci_lo, t_nu_ci_hi, t_note, t_interpretation)
+}
+
+unified_table <- bind_rows(
+  format_tfit_row(tfit_results$aggregate$stats),
+  format_tfit_row(tfit_results$core$stats),
+  format_tfit_row(tfit_results$peripheral$stats),
+  format_tfit_row(stats_crisis),
+  format_tfit_row(stats_milestone),
+  format_tfit_row(stats_normal)
+)
+
+# Fix Inf values for CSV output
+unified_table <- unified_table %>%
+  mutate(
+    t_theo_var_str = ifelse(is.infinite(t_theo_var), "Inf", as.character(round(t_theo_var, 6)))
+  )
+
+cat("\nUnified t-distribution comparison:\n")
+unified_table %>%
+  select(Group, N, t_sigma, t_sigma_sq, t_nu, L_Kurtosis, t_interpretation) %>%
+  print(width = 120)
+
+unified_path <- file.path(tables_dir, "table_tfit_comparison.csv")
+write_csv(unified_table, unified_path)
+verify_output(unified_path)
+
 cat("\n04_h2_crisis_milestone.R completed.\n")
