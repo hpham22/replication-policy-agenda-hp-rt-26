@@ -1,0 +1,24 @@
+Statistic,Full_Distribution,Restricted_Distribution,Benchmark
+N,772,130,
+N excluded (0 -> positive),76,76,
+N zero-to-zero,642,(excluded),
+Minimum,-1.0000,-1.0000,
+Maximum,11.0000,11.0000,
+Mean,-0.0651,-0.3863,
+Median,0.0000,-1.0000,
+Standard Deviation,0.5910,1.4008,
+Skewness,9.6239,5.0857,0 for symmetric
+Proportion zeros,0.856,0.146,
+Proportion -1,0.097,0.577,
+Raw Kurtosis (benchmark=3),170.2610,37.9179,3 (normal)
+Excess Kurtosis (benchmark=0),167.2610,34.9179,0 (normal)
+"L-kurtosis (tau_4, benchmark=0.123)",0.6463,0.3721,0.1226 (normal)
+Shapiro-Wilk W,0.299039,0.465710,
+Shapiro-Wilk p-value,5.5720e-47,9.6292e-20,< 0.05 rejects normality
+t-fit: mu (SE),0.0000 (NA),-1.0000 (NA),
+t-fit: sigma (SE),0.0000 (NA),0.0000 (NA),
+t-fit: sigma^2,0.000000,0.000000,
+t-fit: nu (SE),1.0100 (NA),1.0100 (NA),
+t-fit: Theo. variance,Inf,Inf,
+t-fit: AIC,-13419.59,-248.05,
+t-fit: Note,"converged; jittered: sigma=0.0005, nu=1.01","converged; jittered: sigma=0.0014, nu=1.01",
