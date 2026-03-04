@@ -1,16 +1,16 @@
 Metric,Aggregate,Core,Peripheral
-N,772,132,640
-Mean,-0.0651,-0.0093,-0.0766
-SD,0.5910,1.3062,0.2661
-Skewness,9.6239,5.3206,-3.1925
-Raw Kurtosis (benchmark=3),170.2610,42.4905,11.2176
-"L-kurtosis (tau_4, benchmark=0.123)",0.6463,0.4199,0.6516
-Shapiro-Wilk W,0.299039,0.503274,0.292318
-Shapiro-Wilk p,5.5720e-47,3.0612e-19,7.1496e-44
-t-fit: mu (SE),0.000000 (NA),0.000000 (NA),0.000000 (NA)
-t-fit: sigma (SE),0.000001 (NA),0.000001 (NA),0.000001 (NA)
-t-fit: sigma^2,0.000000,0.000000,0.000000
-t-fit: nu (SE),1.0100 (NA),1.0164 (NA),1.0100 (NA)
+N,130,77,53
+Mean,-0.3863,-0.0159,-0.9245
+SD,1.4008,1.7149,0.2667
+Skewness,5.0857,4.1097,3.3087
+Raw Kurtosis (benchmark=3),37.9179,25.4703,12.2970
+"L-kurtosis (tau_4, benchmark=0.123)",0.3721,0.3265,0.7176
+Shapiro-Wilk W,0.465710,0.562698,0.292082
+Shapiro-Wilk p,9.6292e-20,8.5914e-14,1.4838e-14
+t-fit: mu (SE),-1.000000 (NA),-0.597350 (NA),-1.000000 (NA)
+t-fit: sigma (SE),0.000001 (NA),0.474967 (NA),0.000001 (NA)
+t-fit: sigma^2,0.000000,0.225594,0.000000
+t-fit: nu (SE),1.0100 (NA),1.5044 (NA),1.0100 (NA)
 t-fit: Theo. variance,Inf,Inf,Inf
-t-fit: AIC,-13419.59,90.78,-13494.65
-t-fit: Note,"converged; jittered: sigma=0.0005, nu=1.01","converged; jittered: sigma=0.0023, nu=1.01","converged; jittered: sigma=0.0005, nu=1.01"
+t-fit: AIC,-248.05,222.04,-1115.23
+t-fit: Note,"converged; jittered: sigma=0.0014, nu=1.01",converged,"converged; jittered: sigma=0.0005, nu=1.01"

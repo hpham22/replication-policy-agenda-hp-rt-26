@@ -104,17 +104,18 @@ print(table2 %>% select(Category, Area_Name, Total_Count, Share_Pct,
 # ============================================================================
 cat("\n--- 4.2: Distributional comparison ---\n")
 
+# Use restricted distribution (excl 0-to-0) as primary basis
 core_pct <- all_area_pct %>%
-  filter(main_area %in% CORE_AREAS, !is.na(pct_change)) %>%
+  filter(main_area %in% CORE_AREAS, !is.na(pct_change), status != "zero_to_zero") %>%
   pull(pct_change)
 
 periph_pct <- all_area_pct %>%
-  filter(main_area %in% PERIPHERAL_AREAS, !is.na(pct_change)) %>%
+  filter(main_area %in% PERIPHERAL_AREAS, !is.na(pct_change), status != "zero_to_zero") %>%
   pull(pct_change)
 
-cat("Core observations:      ", length(core_pct), "\n")
-cat("Peripheral observations:", length(periph_pct), "\n")
-cat("Total pooled:           ", length(pooled_full), "\n")
+cat("Core observations (restricted):      ", length(core_pct), "\n")
+cat("Peripheral observations (restricted):", length(periph_pct), "\n")
+cat("Total pooled (restricted):           ", length(pooled_restricted), "\n")
 
 compute_group_stats <- function(x, label) {
   n <- length(x)
@@ -149,9 +150,9 @@ compute_group_stats <- function(x, label) {
   )
 }
 
-stats_agg    <- compute_group_stats(pooled_full, "Aggregate")
-stats_core   <- compute_group_stats(core_pct, "Core")
-stats_periph <- compute_group_stats(periph_pct, "Peripheral")
+stats_agg    <- compute_group_stats(pooled_restricted, "Aggregate (restricted)")
+stats_core   <- compute_group_stats(core_pct, "Core (restricted)")
+stats_periph <- compute_group_stats(periph_pct, "Peripheral (restricted)")
 
 # Build Table 3 in column format (Metric | Aggregate | Core | Peripheral)
 fmt <- function(x, d = 4) {
@@ -204,12 +205,16 @@ verify_output(table3_path)
 # ============================================================================
 cat("\n--- 4.3: Variance decomposition ---\n")
 
-total_var <- var(pooled_full)
+# Variance decomposition on restricted distribution
+total_var <- var(pooled_restricted)
 var_core <- var(core_pct)
 var_periph <- var(periph_pct)
 n_core <- length(core_pct)
 n_periph <- length(periph_pct)
 n_total <- n_core + n_periph
+
+cat(sprintf("  Note: using restricted distribution (N=%d, core=%d, periph=%d)\n",
+            n_total, n_core, n_periph))
 
 weighted_within <- (n_core / n_total) * var_core + (n_periph / n_total) * var_periph
 between_var <- total_var - weighted_within

@@ -102,8 +102,9 @@ normal_years <- setdiff(
   c(CRISIS_YEARS, MILESTONE_YEARS, ZERO_YEARS)
 )
 
+# Use restricted distribution (excl 0-to-0) for t-fits
 pct_with_type <- all_area_pct %>%
-  filter(!is.na(pct_change)) %>%
+  filter(!is.na(pct_change), status != "zero_to_zero") %>%
   mutate(
     is_crisis    = year_to %in% CRISIS_YEARS,
     is_milestone = year_to %in% MILESTONE_YEARS,
@@ -114,9 +115,9 @@ crisis_pct    <- pct_with_type %>% filter(is_crisis) %>% pull(pct_change)
 milestone_pct <- pct_with_type %>% filter(is_milestone) %>% pull(pct_change)
 normal_pct    <- pct_with_type %>% filter(is_normal) %>% pull(pct_change)
 
-cat(sprintf("  Crisis subset:    n = %d\n", length(crisis_pct)))
-cat(sprintf("  Milestone subset: n = %d\n", length(milestone_pct)))
-cat(sprintf("  Normal subset:    n = %d\n", length(normal_pct)))
+cat(sprintf("  Crisis subset (restricted):    n = %d\n", length(crisis_pct)))
+cat(sprintf("  Milestone subset (restricted): n = %d\n", length(milestone_pct)))
+cat(sprintf("  Normal subset (restricted):    n = %d\n", length(normal_pct)))
 
 fit_crisis    <- fit_location_scale_t(crisis_pct, "crisis")
 fit_milestone <- fit_location_scale_t(milestone_pct, "milestone")

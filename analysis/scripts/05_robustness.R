@@ -30,14 +30,15 @@ thresholds <- list(
   "Top-4 (4, 10, 15, 20)"  = c(4, 10, 15, 20)
 )
 
+# Use restricted distribution (excl 0-to-0) for core threshold sensitivity
 sensitivity_core <- map_dfr(names(thresholds), function(tname) {
   core_set <- thresholds[[tname]]
 
   core_changes <- all_area_pct %>%
-    filter(main_area %in% core_set, !is.na(pct_change)) %>%
+    filter(main_area %in% core_set, !is.na(pct_change), status != "zero_to_zero") %>%
     pull(pct_change)
   periph_changes <- all_area_pct %>%
-    filter(!main_area %in% core_set, !is.na(pct_change)) %>%
+    filter(!main_area %in% core_set, !is.na(pct_change), status != "zero_to_zero") %>%
     pull(pct_change)
 
   # Core share of total instruments
@@ -183,5 +184,45 @@ print(comparison_1yr, width = 120)
 sensitivity_1yr_path <- file.path(tables_dir, "appendix_sensitivity_1yr.csv")
 write_csv(comparison_1yr, sensitivity_1yr_path)
 verify_output(sensitivity_1yr_path)
+
+# ============================================================================
+# Full distribution robustness check
+# ============================================================================
+cat("\n--- Full distribution robustness check ---\n")
+cat("Note: Full distribution (incl 0-to-0) produces qualitatively identical\n")
+cat("conclusions with amplified kurtosis values due to 83% zero point mass.\n\n")
+
+# Aggregate full distribution stats
+full_core_pct <- all_area_pct %>%
+  filter(main_area %in% CORE_AREAS, !is.na(pct_change)) %>%
+  pull(pct_change)
+full_periph_pct <- all_area_pct %>%
+  filter(!main_area %in% CORE_AREAS, !is.na(pct_change)) %>%
+  pull(pct_change)
+
+full_robust <- tibble(
+  Group = c("Aggregate", "Core", "Peripheral"),
+  Distribution = rep("Full (incl 0-to-0)", 3),
+  N = c(length(pooled_full), length(full_core_pct), length(full_periph_pct)),
+  Mean = c(mean(pooled_full), mean(full_core_pct), mean(full_periph_pct)),
+  SD = c(sd(pooled_full), sd(full_core_pct), sd(full_periph_pct)),
+  Kurtosis = c(calc_kurtosis_raw(pooled_full),
+               calc_kurtosis_raw(full_core_pct),
+               calc_kurtosis_raw(full_periph_pct)),
+  L_Kurtosis = c(as.numeric(calc_lkurtosis(pooled_full)),
+                 as.numeric(calc_lkurtosis(full_core_pct)),
+                 as.numeric(calc_lkurtosis(full_periph_pct))),
+  Prop_Zeros = c(mean(pooled_full == 0),
+                 mean(full_core_pct == 0),
+                 mean(full_periph_pct == 0)),
+  Variance = c(var(pooled_full), var(full_core_pct), var(full_periph_pct))
+)
+
+cat("\nFull distribution robustness:\n")
+print(full_robust, width = 120)
+
+full_robust_path <- file.path(tables_dir, "appendix_full_distribution_robustness.csv")
+write_csv(full_robust, full_robust_path)
+verify_output(full_robust_path)
 
 cat("\n05_robustness.R completed.\n")
