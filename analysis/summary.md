@@ -1,6 +1,6 @@
 # ASEAN Policy Agenda Analysis: Summary of Results
 
-Generated: 2026-03-04 08:54:41
+Generated: 2026-03-05 03:07:33
 
 ## Data
 
@@ -34,7 +34,7 @@ Generated: 2026-03-04 08:54:41
 - **L-kurtosis:** 0.3721 (benchmark = 0.1226)
 - **Shapiro-Wilk:** W = 0.465710, p = 9.6292e-20
 - **t-fit:** mu = -1.0000 (NA), sigma = 0.0000 (NA), nu = 1.0100 (NA)
-- **Note:** converged; jittered: sigma=0.0015, nu=1.01
+- **Note:** converged; jittered: sigma=0.0014, nu=1.01
 
 ### Full Distribution (Robustness)
 - **N:** 772
@@ -42,7 +42,7 @@ Generated: 2026-03-04 08:54:41
 - **Raw kurtosis:** 170.2610
 - **L-kurtosis:** 0.6463
 - **t-fit:** mu = 0.0000 (NA), sigma = 0.0000 (NA), nu = 1.0100 (NA)
-- **Note:** converged; jittered: sigma=0.0007, nu=1.01
+- **Note:** converged; jittered: sigma=0.0005, nu=1.01
 
 ## H1b: Core-Periphery Decomposition
 
@@ -62,7 +62,7 @@ Generated: 2026-03-04 08:54:41
 **t-fit: nu (SE):** Agg = 1.0100 (NA) | Core = 1.5044 (NA) | Periph = 1.0100 (NA)
 **t-fit: Theo. variance:** Agg = Inf | Core = Inf | Periph = Inf
 **t-fit: AIC:** Agg = -248.05 | Core = 222.04 | Periph = -1115.23
-**t-fit: Note:** Agg = converged; jittered: sigma=0.0014, nu=1.01 | Core = converged | Periph = converged; jittered: sigma=0.0005, nu=1.01
+**t-fit: Note:** Agg = converged; jittered: sigma=0.0014, nu=1.01 | Core = converged | Periph = converged; jittered: sigma=0.0004, nu=1.01
 
 ### Variance Decomposition
 - Total variance: 1.9622

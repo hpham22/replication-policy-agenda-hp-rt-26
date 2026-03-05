@@ -35,6 +35,9 @@ source(file.path(scripts_dir, "04_h2_crisis_milestone.R"))
 cat("\n>>> Sourcing 05_robustness.R\n")
 source(file.path(scripts_dir, "05_robustness.R"))
 
+cat("\n>>> Sourcing 06_robustness_pct_pct.R\n")
+source(file.path(scripts_dir, "06_robustness_pct_pct.R"))
+
 # ============================================================================
 # Generate summary.md
 # ============================================================================
@@ -206,6 +209,10 @@ expected_files <- c(
   file.path(tables_dir, "appendix_period_effects.csv"),
   file.path(tables_dir, "appendix_sensitivity_1yr.csv"),
   file.path(tables_dir, "appendix_full_distribution_robustness.csv"),
+  file.path(tables_dir, "appendix_pctpct_h1a_comparison.csv"),
+  file.path(tables_dir, "appendix_pctpct_h1b_comparison.csv"),
+  file.path(figures_dir, "fig_appendix_pctpct_histogram.png"),
+  file.path(figures_dir, "fig_appendix_pctpct_histogram.pdf"),
   file.path(figures_dir, "fig1_attention_shares.png"),
   file.path(figures_dir, "fig1_attention_shares.pdf"),
   file.path(figures_dir, "fig2_timeline_annotated.png"),

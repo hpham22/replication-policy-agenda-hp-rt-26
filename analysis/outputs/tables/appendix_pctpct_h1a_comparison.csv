@@ -1,0 +1,12 @@
+Statistic,Pct-Count (restricted),Pct-Pct,Lundgren et al. range
+N,130,624,
+Mean,-0.386319,-0.000000,
+Median,-1.000000,0.000000,
+SD,1.4008,0.1848,
+Min,-1.0000,-1.0000,
+Max,11.0000,1.0000,
+Raw Kurtosis (benchmark=3),37.9179,17.8077,
+L-kurtosis (benchmark=0.1226),0.3721,0.6697,"EU=0.26, OAS=0.26, UN=0.28, AU=0.30, OIC=0.31"
+Shapiro-Wilk W,0.465710,0.582240,
+Shapiro-Wilk p,9.6292e-20,4.1727e-36,
+Proportion zeros,0.1462,0.7083,
