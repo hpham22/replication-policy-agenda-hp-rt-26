@@ -35,6 +35,12 @@ source(file.path(scripts_dir, "04_h2_crisis_milestone.R"))
 cat("\n>>> Sourcing 05_robustness.R\n")
 source(file.path(scripts_dir, "05_robustness.R"))
 
+cat("\n>>> Sourcing 06_robustness_pct_pct.R\n")
+source(file.path(scripts_dir, "06_robustness_pct_pct.R"))
+
+cat("\n>>> Sourcing 07_figure_faceted_distributions.R\n")
+source(file.path(scripts_dir, "07_figure_faceted_distributions.R"))
+
 # ============================================================================
 # Generate summary.md
 # ============================================================================
@@ -52,7 +58,7 @@ table4 <- read_csv(file.path(tables_dir, "table4_year_type_comparison.csv"),
 var_decomp <- read_csv(file.path(tables_dir, "table3b_variance_decomposition.csv"),
                        show_col_types = FALSE)
 
-get_val <- function(stat, col = "Full_Distribution") {
+get_val <- function(stat, col = "Primary (excl 0-to-0)") {
   row <- table1 %>% filter(Statistic == stat)
   if (nrow(row) == 0) return(NA)
   row[[col]][1]
@@ -75,14 +81,14 @@ summary_lines <- c(
   "",
   "## Parameter Choices",
   "",
+  "- **Primary distribution:** Restricted (excl. 0-to-0), N = 130",
+  "- **Full distribution (robustness):** N = 772 (incl. 642 zero-to-zero transitions)",
   "- **Percentage changes:** Area-level, pooled across 16 areas and 53 year-pairs",
   "- **Zero-handling rules:**",
-  "  - 0 -> 0: assign 0 (included in full distribution, excluded in restricted)",
+  "  - 0 -> 0: assign 0 (excluded from primary; included in robustness)",
   "  - 0 -> >0: exclude (undefined)",
   "  - >0 -> 0: assign -1 (100% decrease)",
   "  - >0 -> >0: standard formula",
-  "- **Full distribution:** N = 772 (incl. 642 zero-to-zero transitions)",
-  "- **Restricted distribution:** N = 130 (excl. zero-to-zero)",
   "- **Core areas:** 10 (Transportation), 15 (Intra-ASEAN Trade), 20 (ASEAN Governance)",
   "- **2008 classification:** Milestone only (Charter preceded GFC; overlap flagged)",
   "- **Crisis windows:** 1997-98, 2004-05, 2009, 2020",
@@ -90,7 +96,7 @@ summary_lines <- c(
   "",
   "## H1a: Aggregate Punctuated Equilibrium",
   "",
-  "### Full Distribution",
+  "### Primary Distribution (Restricted, excl. 0-to-0)",
   sprintf("- **N:** %s", get_val("N")),
   sprintf("- **Mean:** %s, **Median:** %s, **SD:** %s",
           get_val("Mean"), get_val("Median"), get_val("Standard Deviation")),
@@ -104,24 +110,24 @@ summary_lines <- c(
           get_val("t-fit: nu (SE)")),
   sprintf("- **Note:** %s", get_val("t-fit: Note")),
   "",
-  "### Restricted Distribution (excl. 0-to-0)",
-  sprintf("- **N:** %s", get_val("N", "Restricted_Distribution")),
+  "### Full Distribution (Robustness)",
+  sprintf("- **N:** %s", get_val("N", "Full (robustness)")),
   sprintf("- **Mean:** %s, **SD:** %s",
-          get_val("Mean", "Restricted_Distribution"),
-          get_val("Standard Deviation", "Restricted_Distribution")),
+          get_val("Mean", "Full (robustness)"),
+          get_val("Standard Deviation", "Full (robustness)")),
   sprintf("- **Raw kurtosis:** %s",
-          get_val("Raw Kurtosis (benchmark=3)", "Restricted_Distribution")),
+          get_val("Raw Kurtosis (benchmark=3)", "Full (robustness)")),
   sprintf("- **L-kurtosis:** %s",
-          get_val("L-kurtosis (tau_4, benchmark=0.123)", "Restricted_Distribution")),
+          get_val("L-kurtosis (tau_4, benchmark=0.123)", "Full (robustness)")),
   sprintf("- **t-fit:** mu = %s, sigma = %s, nu = %s",
-          get_val("t-fit: mu (SE)", "Restricted_Distribution"),
-          get_val("t-fit: sigma (SE)", "Restricted_Distribution"),
-          get_val("t-fit: nu (SE)", "Restricted_Distribution")),
-  sprintf("- **Note:** %s", get_val("t-fit: Note", "Restricted_Distribution")),
+          get_val("t-fit: mu (SE)", "Full (robustness)"),
+          get_val("t-fit: sigma (SE)", "Full (robustness)"),
+          get_val("t-fit: nu (SE)", "Full (robustness)")),
+  sprintf("- **Note:** %s", get_val("t-fit: Note", "Full (robustness)")),
   "",
   "## H1b: Core-Periphery Decomposition",
   "",
-  "### Distributional Comparison (Table 3)",
+  "### Distributional Comparison (Table 3, restricted distribution)",
   ""
 )
 
@@ -205,6 +211,13 @@ expected_files <- c(
   file.path(tables_dir, "appendix_core_threshold_sensitivity.csv"),
   file.path(tables_dir, "appendix_period_effects.csv"),
   file.path(tables_dir, "appendix_sensitivity_1yr.csv"),
+  file.path(tables_dir, "appendix_full_distribution_robustness.csv"),
+  file.path(tables_dir, "appendix_pctpct_h1a_comparison.csv"),
+  file.path(tables_dir, "appendix_pctpct_h1b_comparison.csv"),
+  file.path(figures_dir, "fig_appendix_pctpct_histogram.png"),
+  file.path(figures_dir, "fig_appendix_pctpct_histogram.pdf"),
+  file.path(figures_dir, "fig6_faceted_distributions.png"),
+  file.path(figures_dir, "fig6_faceted_distributions.pdf"),
   file.path(figures_dir, "fig1_attention_shares.png"),
   file.path(figures_dir, "fig1_attention_shares.pdf"),
   file.path(figures_dir, "fig2_timeline_annotated.png"),

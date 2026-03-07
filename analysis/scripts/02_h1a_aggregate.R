@@ -172,8 +172,8 @@ benchmarks <- c(
 
 table1 <- tibble(
   Statistic = stat_names,
-  Full_Distribution = full_vals,
-  Restricted_Distribution = restr_vals,
+  `Primary (excl 0-to-0)` = restr_vals,
+  `Full (robustness)` = full_vals,
   Benchmark = benchmarks
 )
 
@@ -190,26 +190,23 @@ save(tfit_full, tfit_restr,
 # ============================================================================
 cat("\n--- 3.8: Figure 3 ---\n")
 
-# Use full distribution for histogram
-hist_data <- tibble(pct = pooled_full)
+# Use restricted distribution (primary) for histogram
+hist_data <- tibble(pct = pooled_restricted)
 
 # Build overlay curves
-x_range <- seq(min(pooled_full) - 0.5, max(pooled_full) + 0.5, length.out = 500)
+x_range <- seq(min(pooled_restricted) - 0.5, max(pooled_restricted) + 0.5, length.out = 500)
 
-# Normal overlay
+# Normal overlay (fit to restricted)
 normal_overlay <- tibble(
   x = x_range,
-  density = dnorm(x_range, mean = mean(pooled_full), sd = sd(pooled_full)),
+  density = dnorm(x_range, mean = mean(pooled_restricted), sd = sd(pooled_restricted)),
   Distribution = "Normal"
 )
 
-# T-distribution overlay (use restricted fit if full is degenerate)
-if (!is.na(tfit_full$sigma) && tfit_full$sigma > 1e-4) {
-  tfit_for_plot <- tfit_full
-  t_label <- "Fitted t (full)"
-} else if (!is.na(tfit_restr$sigma) && tfit_restr$sigma > 1e-4) {
+# T-distribution overlay (use restricted fit)
+if (!is.na(tfit_restr$sigma) && tfit_restr$sigma > 1e-4) {
   tfit_for_plot <- tfit_restr
-  t_label <- "Fitted t (restricted)"
+  t_label <- "Fitted t"
 } else {
   tfit_for_plot <- NULL
   t_label <- NULL
@@ -226,15 +223,14 @@ if (!is.null(tfit_for_plot)) {
   overlay_df <- bind_rows(overlay_df, t_overlay)
 }
 
-# Determine annotation text
+# Determine annotation text (restricted as primary)
 annot_text <- sprintf(
   "Kurtosis = %.1f\nL-kurtosis = %.4f\nN = %d",
-  stats_full$Raw_Kurtosis, stats_full$L_Kurtosis, stats_full$N
+  stats_restr$Raw_Kurtosis, stats_restr$L_Kurtosis, stats_restr$N
 )
 if (!is.null(tfit_for_plot)) {
   annot_text <- paste0(annot_text,
-    sprintf("\n\u03BD = %.2f (%s)", tfit_for_plot$nu,
-            if (identical(tfit_for_plot, tfit_restr)) "restricted" else "full"))
+    sprintf("\n\u03BD = %.2f", tfit_for_plot$nu))
 }
 
 fig3 <- ggplot() +
@@ -249,16 +245,16 @@ fig3 <- ggplot() +
     values = c("Normal" = "dashed",
                setNames("solid", t_label))
   ) +
-  annotate("text", x = max(pooled_full) * 0.6, y = Inf,
+  annotate("text", x = max(pooled_restricted) * 0.6, y = Inf,
            label = annot_text, hjust = 0, vjust = 1.5,
            size = 3, family = "mono") +
-  coord_cartesian(xlim = c(-1.5, max(pooled_full) + 0.5)) +
+  coord_cartesian(xlim = c(-1.5, max(pooled_restricted) + 0.5)) +
   labs(
     x = "Annual Percentage Change",
     y = "Density",
-    title = "Distribution of Pooled Annual Percentage Changes",
-    subtitle = sprintf("N = %d (full) | %d (restricted, excl. 0-to-0)",
-                       length(pooled_full), length(pooled_restricted)),
+    title = "Distribution of Pooled Annual Percentage Changes (Restricted)",
+    subtitle = sprintf("N = %d (excl. 0-to-0) | Full distribution (N = %d) in robustness appendix",
+                       length(pooled_restricted), length(pooled_full)),
     linetype = "Overlay"
   ) +
   theme_pub()
