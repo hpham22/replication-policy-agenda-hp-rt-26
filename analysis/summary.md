@@ -1,6 +1,6 @@
 # ASEAN Policy Agenda Analysis: Summary of Results
 
-Generated: 2026-03-05 03:07:33
+Generated: 2026-03-07 04:42:04
 
 ## Data
 
@@ -34,7 +34,7 @@ Generated: 2026-03-05 03:07:33
 - **L-kurtosis:** 0.3721 (benchmark = 0.1226)
 - **Shapiro-Wilk:** W = 0.465710, p = 9.6292e-20
 - **t-fit:** mu = -1.0000 (NA), sigma = 0.0000 (NA), nu = 1.0100 (NA)
-- **Note:** converged; jittered: sigma=0.0014, nu=1.01
+- **Note:** converged; jittered: sigma=0.0015, nu=1.01
 
 ### Full Distribution (Robustness)
 - **N:** 772
@@ -42,7 +42,7 @@ Generated: 2026-03-05 03:07:33
 - **Raw kurtosis:** 170.2610
 - **L-kurtosis:** 0.6463
 - **t-fit:** mu = 0.0000 (NA), sigma = 0.0000 (NA), nu = 1.0100 (NA)
-- **Note:** converged; jittered: sigma=0.0005, nu=1.01
+- **Note:** converged; jittered: sigma=0.0006, nu=1.01
 
 ## H1b: Core-Periphery Decomposition
 

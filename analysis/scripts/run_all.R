@@ -38,6 +38,9 @@ source(file.path(scripts_dir, "05_robustness.R"))
 cat("\n>>> Sourcing 06_robustness_pct_pct.R\n")
 source(file.path(scripts_dir, "06_robustness_pct_pct.R"))
 
+cat("\n>>> Sourcing 07_figure_faceted_distributions.R\n")
+source(file.path(scripts_dir, "07_figure_faceted_distributions.R"))
+
 # ============================================================================
 # Generate summary.md
 # ============================================================================
@@ -213,6 +216,8 @@ expected_files <- c(
   file.path(tables_dir, "appendix_pctpct_h1b_comparison.csv"),
   file.path(figures_dir, "fig_appendix_pctpct_histogram.png"),
   file.path(figures_dir, "fig_appendix_pctpct_histogram.pdf"),
+  file.path(figures_dir, "fig6_faceted_distributions.png"),
+  file.path(figures_dir, "fig6_faceted_distributions.pdf"),
   file.path(figures_dir, "fig1_attention_shares.png"),
   file.path(figures_dir, "fig1_attention_shares.pdf"),
   file.path(figures_dir, "fig2_timeline_annotated.png"),
