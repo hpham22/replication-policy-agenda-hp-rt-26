@@ -14,3 +14,8 @@ t-fit: nu (SE),1.0100 (NA),1.5044 (NA),1.0100 (NA)
 t-fit: Theo. variance,Inf,Inf,Inf
 t-fit: AIC,-248.05,222.04,-1115.23
 t-fit: Note,"converged; jittered: sigma=0.0014, nu=1.01",converged,"converged; jittered: sigma=0.0004, nu=1.01"
+Var. decomp: Total variance,1.9622,,
+Var. decomp: Within-core (% of total),1.7419 (88.8%),,
+Var. decomp: Within-peripheral (% of total),0.0290 (1.5%),,
+Var. decomp: Weighted within (% of total),1.7709 (90.3%),,
+Var. decomp: Between-group (% of total),0.1913 (9.7%),,

@@ -1,0 +1,9 @@
+Metric,Pct-Count (restricted),Pct-Pct Aggregate,Pct-Pct Core,Pct-Pct Peripheral,Lundgren et al. range
+N,130,624,117,507,
+Mean,-0.386319,-0.000000,0.015670,-0.003616,
+SD,1.4008,0.1848,0.3505,0.1176,
+Raw Kurtosis (benchmark=3),37.9179,17.8077,5.2949,39.6513,
+L-kurtosis (benchmark=0.1226),0.3721,0.6697,0.3131,0.7708,"EU=0.26, OAS=0.26, UN=0.28, AU=0.30, OIC=0.31"
+Shapiro-Wilk W,0.465710,0.582240,0.917113,0.427920,
+Shapiro-Wilk p,9.6292e-20,4.1727e-36,2.1339e-06,3.7313e-37,
+Proportion zeros,0.1462,0.7083,0.2564,0.8126,
