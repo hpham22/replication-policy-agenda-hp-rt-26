@@ -14,6 +14,8 @@ suppressPackageStartupMessages({
   library(scales)
   library(ragg)
   library(patchwork)
+  library(knitr)
+  library(kableExtra)
 })
 select <- dplyr::select
 
@@ -386,6 +388,67 @@ save_figure <- function(plot, name, width = 6.5, height = 4.5) {
          device = cairo_pdf)
   verify_output(png_path)
   verify_output(pdf_path)
+}
+
+# --- Publication table helper (kableExtra) ---
+# Produces HTML + LaTeX PDF outputs for each table
+# Style: booktabs, serif font, compact, horizontal rules only
+
+save_table <- function(tbl, name, caption = NULL, footnote = NULL,
+                       col_names = NULL, align = NULL,
+                       group_rows = NULL, pack_rows = NULL) {
+  html_path  <- file.path(tables_dir, paste0(name, ".html"))
+  latex_path <- file.path(tables_dir, paste0(name, ".tex"))
+
+  # Column names default to existing names
+  if (is.null(col_names)) col_names <- names(tbl)
+
+  kb <- kbl(tbl, format = "html", booktabs = TRUE,
+            caption = caption, col.names = col_names, align = align,
+            escape = FALSE) %>%
+    kable_styling(
+      bootstrap_options = c("striped", "condensed"),
+      full_width = FALSE, font_size = 13,
+      html_font = '"Times New Roman", Times, serif'
+    )
+
+  # Apply row grouping if specified
+  if (!is.null(pack_rows)) {
+    for (pr in pack_rows) {
+      kb <- kb %>% pack_rows(pr$label, pr$start, pr$end,
+                             bold = TRUE, italic = FALSE)
+    }
+  }
+
+  if (!is.null(footnote)) {
+    kb <- kb %>% footnote(general = footnote, general_title = "Note: ",
+                          footnote_as_chunk = TRUE)
+  }
+
+  save_kable(kb, file = html_path, self_contained = TRUE)
+  verify_output(html_path)
+
+  # LaTeX version
+  kb_tex <- kbl(tbl, format = "latex", booktabs = TRUE,
+                caption = caption, col.names = col_names, align = align,
+                escape = FALSE) %>%
+    kable_styling(latex_options = c("hold_position", "scale_down"),
+                  font_size = 10)
+
+  if (!is.null(pack_rows)) {
+    for (pr in pack_rows) {
+      kb_tex <- kb_tex %>% pack_rows(pr$label, pr$start, pr$end,
+                                     bold = TRUE, italic = FALSE)
+    }
+  }
+
+  if (!is.null(footnote)) {
+    kb_tex <- kb_tex %>% footnote(general = footnote, general_title = "Note: ",
+                                  footnote_as_chunk = TRUE, threeparttable = TRUE)
+  }
+
+  save_kable(kb_tex, file = latex_path, self_contained = TRUE)
+  verify_output(latex_path)
 }
 
 cat("\n00_setup.R loaded successfully.\n")

@@ -94,6 +94,25 @@ table3_path <- file.path(tables_dir, "table3_area_descriptives.csv")
 write_csv(table3, table3_path)
 verify_output(table3_path)
 
+# --- kableExtra output for Table 3 ---
+# Identify row ranges for pack_rows
+core_end <- nrow(core_rows) + 1  # includes subtotal
+periph_start <- core_end + 1
+periph_end <- core_end + nrow(periph_rows) + 1
+
+save_table(
+  table3, "table3_area_descriptives",
+  caption = "Table 3. Area-Level Descriptive Statistics",
+  footnote = "Core areas: Transportation (10), Intra-ASEAN Trade (15), ASEAN Governance (20). Within-kurtosis requires >=15 valid observations.",
+  col_names = c("Category", "Code", "Area", "Count", "Share (%)",
+                "Active Yrs", "Prop. Active", "Longest Gap",
+                "Within Var.", "Within Kurt.", "Lag-1 ACF"),
+  pack_rows = list(
+    list(label = "Core Areas", start = 1, end = core_end),
+    list(label = "Peripheral Areas", start = periph_start, end = periph_end)
+  )
+)
+
 cat("\nPersistence measures:\n")
 area_stats %>%
   filter(!is.na(lag1_acf), area_name != "SUBTOTAL") %>%
@@ -217,6 +236,19 @@ table4 <- tibble(
 table4_path <- file.path(tables_dir, "table4_distributional_comparison.csv")
 write_csv(table4, table4_path)
 verify_output(table4_path)
+
+# --- kableExtra output for Table 4 ---
+# Split into distributional stats (rows 1-15) and variance decomp (rows 16-20)
+save_table(
+  table4, "table4_distributional_comparison",
+  caption = "Table 4. Core-Periphery Distributional Comparison (Restricted Distribution)",
+  footnote = "Variance decomposition uses weighted within-group formula. Restricted distribution excludes 0-to-0 transitions.",
+  col_names = c("Metric", "Aggregate", "Core", "Peripheral"),
+  pack_rows = list(
+    list(label = "Distributional Statistics", start = 1, end = 15),
+    list(label = "Variance Decomposition", start = 16, end = 20)
+  )
+)
 
 # ============================================================================
 # Appendix figure: Core-area share and entropy timeseries

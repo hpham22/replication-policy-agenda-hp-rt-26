@@ -57,6 +57,16 @@ tableB1_path <- file.path(tables_dir, "tableB1_full_vs_restricted.csv")
 write_csv(tableB1, tableB1_path)
 verify_output(tableB1_path)
 
+tableB1_display <- tableB1 %>%
+  mutate(across(where(is.numeric) & !matches("^N$"), ~ round(., 4)))
+save_table(
+  tableB1_display, "tableB1_full_vs_restricted",
+  caption = "Table B1. Full Distribution Statistics (Including 0-to-0 Transitions)",
+  footnote = "Full distribution includes 642 zero-to-zero transitions. Compare with restricted distribution in Table 2.",
+  col_names = c("Group", "Distribution", "N", "Mean", "SD",
+                "Kurtosis", "L-kurtosis", "Prop. Zeros", "Variance")
+)
+
 # ============================================================================
 # Table B2 — Percentage-percentage method (Lundgren et al. 2018)
 # ============================================================================
@@ -158,6 +168,12 @@ tableB2_path <- file.path(tables_dir, "tableB2_pctpct_comparison.csv")
 write_csv(tableB2, tableB2_path)
 verify_output(tableB2_path)
 
+save_table(
+  tableB2, "tableB2_pctpct_comparison",
+  caption = "Table B2. Percentage-Percentage Method Comparison (Lundgren et al. 2018)",
+  footnote = "Pct-pct method uses first differences of proportional shares. Lundgren et al. (2018) L-kurtosis values for comparison IOs."
+)
+
 # ============================================================================
 # Table B3 — Core threshold sensitivity
 # ============================================================================
@@ -202,6 +218,19 @@ print(tableB3, width = 120)
 tableB3_path <- file.path(tables_dir, "tableB3_core_threshold.csv")
 write_csv(tableB3, tableB3_path)
 verify_output(tableB3_path)
+
+tableB3_display <- tableB3 %>%
+  mutate(across(where(is.numeric) & !matches("^(N_|Core_N|Periph_N|Core_Instrument)"),
+                ~ round(., 4)))
+save_table(
+  tableB3_display, "tableB3_core_threshold",
+  caption = "Table B3. Core Threshold Sensitivity Analysis",
+  footnote = "Restricted distribution. Baseline uses top-3 areas by instrument count (10, 15, 20).",
+  col_names = c("Threshold", "N Areas", "Inst. Share (%)",
+                "Core N", "Periph N", "Core Kurt.", "Periph Kurt.",
+                "Core L-kurt.", "Periph L-kurt.",
+                "Core Var.", "Periph Var.", "Var. Ratio")
+)
 
 # ============================================================================
 # Table B4 — One-year window sensitivity
@@ -252,6 +281,26 @@ print(tableB4, width = 120)
 tableB4_path <- file.path(tables_dir, "tableB4_1yr_windows.csv")
 write_csv(tableB4, tableB4_path)
 verify_output(tableB4_path)
+
+tableB4_display <- tableB4 %>%
+  mutate(across(where(is.numeric), ~ round(., 3))) %>%
+  mutate(
+    `Output (mean ± SD)` = sprintf("%.1f ± %.1f", mean_total, sd_total),
+    `Active (mean ± SD)` = sprintf("%.1f ± %.1f", mean_active, sd_active),
+    `HHI (mean ± SD)` = sprintf("%.3f ± %.3f", mean_hhi, sd_hhi),
+    `Core Share (mean ± SD)` = sprintf("%.3f ± %.3f", mean_core_prop, sd_core_prop),
+    `Entropy (mean ± SD)` = sprintf("%.3f ± %.3f", mean_entropy, sd_entropy)
+  ) %>%
+  select(Year_Type = year_type_1yr, N = n_years,
+         `Output (mean ± SD)`, `Active (mean ± SD)`,
+         `HHI (mean ± SD)`, `Core Share (mean ± SD)`,
+         `Entropy (mean ± SD)`)
+
+save_table(
+  tableB4_display, "tableB4_1yr_windows",
+  caption = "Table B4. One-Year Window Sensitivity Analysis",
+  footnote = "One-year windows: crisis = {1997, 2004, 2009, 2020}, milestone = {1976, 1992, 2007, 2015}. Compare with two-year windows in Table 5."
+)
 
 # ============================================================================
 # Table B5 — Period effects (pre/post Charter, cutoff ≤2008/≥2009)
@@ -314,6 +363,20 @@ tableB5_path <- file.path(tables_dir, "tableB5_period_effects.csv")
 write_csv(tableB5, tableB5_path)
 verify_output(tableB5_path)
 
+tableB5_display <- tableB5 %>%
+  mutate(across(where(is.numeric), ~ round(., 4)))
+save_table(
+  tableB5_display, "tableB5_period_effects",
+  caption = "Table B5. Period Effects: Pre- vs. Post-Charter",
+  footnote = "Cutoff: pre-Charter ≤2008 / post-Charter ≥2009. ASEAN Charter signed Nov 2007, entered force Dec 2008.",
+  col_names = c("Period", "N", "Mean", "SD", "Kurtosis", "L-kurtosis",
+                "Prop. Zeros", "Prop. -1", "t: mu", "t: sigma", "t: nu", "Note"),
+  pack_rows = list(
+    list(label = "Full Distribution", start = 1, end = 2),
+    list(label = "Restricted Distribution", start = 3, end = 4)
+  )
+)
+
 # ============================================================================
 # Table B6 — T-distribution fitting details
 # ============================================================================
@@ -363,6 +426,14 @@ print(tableB6, width = 140)
 tableB6_path <- file.path(tables_dir, "tableB6_tfit_details.csv")
 write_csv(tableB6, tableB6_path)
 verify_output(tableB6_path)
+
+save_table(
+  tableB6, "tableB6_tfit_details",
+  caption = "Table B6. Location-Scale t-Distribution Fitting Details",
+  footnote = "MLE via fitdistrplus. Degenerate fits (sigma near 0) reflect discrete point masses at 0 and -1. Jittered sensitivity checks reported in Note.",
+  col_names = c("Distribution", "mu (SE)", "sigma (SE)", "sigma²",
+                "nu (SE)", "Theo. Var.", "AIC", "BIC", "LogLik", "Method", "Note")
+)
 
 # ============================================================================
 # Figure B1 — Pct-pct histogram

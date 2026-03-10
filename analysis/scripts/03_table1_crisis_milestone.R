@@ -48,4 +48,15 @@ table1_path <- file.path(tables_dir, "table1_classifications.csv")
 write_csv(table1, table1_path)
 verify_output(table1_path)
 
+# --- kableExtra output ---
+save_table(
+  table1, "table1_classifications",
+  caption = "Table 1. Crisis and Milestone Event Classifications",
+  footnote = "2008 is classified as a milestone year (Charter) for year-type analysis. The GFC crisis window uses 2009 only.",
+  pack_rows = list(
+    list(label = "Crises", start = 1, end = 4),
+    list(label = "Milestones", start = 5, end = 8)
+  )
+)
+
 cat("\n03_table1_crisis_milestone.R completed.\n")

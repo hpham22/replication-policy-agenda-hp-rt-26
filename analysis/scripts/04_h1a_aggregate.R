@@ -138,6 +138,14 @@ table2_path <- file.path(tables_dir, "table2_aggregate_stats.csv")
 write_csv(table2, table2_path)
 verify_output(table2_path)
 
+# --- kableExtra output ---
+save_table(
+  table2, "table2_aggregate_stats",
+  caption = "Table 2. Aggregate Distributional Statistics",
+  footnote = "Restricted distribution excludes 0-to-0 transitions. Benchmarks: kurtosis = 3 (normal), L-kurtosis = 0.1226 (normal).",
+  col_names = c("Statistic", "Restricted (primary)", "Full (robustness)", "Benchmark")
+)
+
 # ============================================================================
 # Figure 3 — Histogram with normal overlay
 # ============================================================================
