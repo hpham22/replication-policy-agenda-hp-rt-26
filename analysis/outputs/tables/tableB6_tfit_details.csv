@@ -1,5 +1,5 @@
 Distribution,mu (SE),sigma (SE),sigma^2,nu (SE),Theo. Variance,AIC,BIC,LogLik,Method,Note
 Aggregate (restricted),-1.000000 (NA),0.000001 (NA),0.000000,1.0100 (NA),Inf,-248.05,-239.45,127.03,fitdist,"converged; jittered: sigma=0.0014, nu=1.01"
-Aggregate (full),0.000000 (NA),0.000001 (NA),0.000000,1.0100 (NA),Inf,-13419.59,-13405.64,6712.80,fitdist,"converged; jittered: sigma=0.0005, nu=1.01"
-Pre-Charter restricted,-1.000000 (NA),0.000001 (NA),0.000000,1.0100 (NA),Inf,-467.34,-460.05,236.67,fitdist,"converged; jittered: sigma=0.0009, nu=1.01"
+Aggregate (full),0.000000 (NA),0.000001 (NA),0.000000,1.0100 (NA),Inf,-13419.59,-13405.64,6712.80,fitdist,"converged; jittered: sigma=0.0006, nu=1.01"
+Pre-Charter restricted,-1.000000 (NA),0.000001 (NA),0.000000,1.0100 (NA),Inf,-467.34,-460.05,236.67,fitdist,"converged; jittered: sigma=0.0010, nu=1.01"
 Post-Charter restricted,-0.899849 (NA),0.251199 (NA),0.063101,1.0100 (NA),Inf,123.27,128.76,-58.64,fitdist,converged

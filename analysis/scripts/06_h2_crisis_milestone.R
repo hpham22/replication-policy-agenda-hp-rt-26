@@ -279,6 +279,7 @@ fig4 <- ggplot(plot_df, aes(x = pct_change)) +
             hjust = 1.1, vjust = 1.3, size = 3.5, family = "serif",
             inherit.aes = FALSE) +
   facet_wrap(~ panel, ncol = 2, scales = "free_y") +
+  scale_x_continuous(breaks = c(-1, seq(0, ceiling(max(plot_df$pct_change)), by = 2))) +
   coord_cartesian(xlim = c(-1.5, max(plot_df$pct_change) + 0.5)) +
   labs(x = "Annual percentage change", y = "Density") +
   theme_pub()

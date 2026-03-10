@@ -285,8 +285,16 @@ p_core <- ggplot() +
              aes(x = year, y = core_share),
              colour = "black", size = 1.5, shape = 16) +
   geom_hline(yintercept = 0.75, linetype = "dotted", colour = "grey50") +
+  annotate("text", x = c(1997.5, 2004.5, 2009, 2020),
+           y = Inf, label = c("AFC", "Tsunami", "GFC", "COVID"),
+           vjust = 1.5, size = 3.5, fontface = "italic", family = "serif") +
+  annotate("text", x = c(1976, 1992, 2007, 2015),
+           y = Inf, label = c("TAC/Summit", "AFTA", "Charter", "Community"),
+           vjust = 3, size = 3.5, fontface = "italic", family = "serif") +
   scale_x_continuous(breaks = seq(1970, 2020, 10)) +
-  scale_y_continuous(labels = percent_format(), limits = c(0, 1)) +
+  scale_y_continuous(labels = percent_format(),
+                     limits = c(0, 1),
+                     expand = expansion(mult = c(0, 0.1))) +
   labs(x = NULL, y = "Core-area share") +
   theme_pub() +
   theme(panel.grid.major.x = element_blank())

@@ -175,6 +175,7 @@ fig3 <- ggplot() +
   annotate("text", x = max(pooled_restricted) * 0.5, y = Inf,
            label = annot_text, hjust = 0, vjust = 1.5,
            size = 4, family = "serif") +
+  scale_x_continuous(breaks = c(-1, seq(0, ceiling(max(pooled_restricted)), by = 2))) +
   coord_cartesian(xlim = c(-1.5, max(pooled_restricted) + 0.5)) +
   labs(x = "Annual percentage change", y = "Density") +
   theme_pub()
