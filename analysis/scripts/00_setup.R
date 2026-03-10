@@ -358,31 +358,32 @@ verify_output <- function(filepath) {
   cat("  OK:", filepath, "(", file.size(filepath), "bytes)\n")
 }
 
-# --- Publication theme (grayscale) ---
+# --- Publication theme (grayscale, journal-ready) ---
+# Per Kastellec (2025), Healy (2019): theme_bw, serif, larger text sizes
 
-theme_pub <- function(base_size = 11) {
-  theme_minimal(base_size = base_size) %+replace%
+theme_pub <- function(base_size = 14) {
+  theme_bw(base_size = base_size, base_family = "serif") %+replace%
     theme(
-      text = element_text(colour = "black"),
-      plot.title = element_text(face = "bold", size = base_size + 2, hjust = 0),
-      plot.subtitle = element_text(size = base_size, hjust = 0,
-                                   margin = margin(b = 8)),
-      axis.title = element_text(size = base_size),
-      axis.text = element_text(size = base_size - 1, colour = "black"),
+      text = element_text(colour = "black", family = "serif"),
+      axis.text = element_text(size = 14, colour = "black"),
+      axis.title = element_text(size = 18),
+      strip.text = element_text(size = 14, face = "bold"),
+      legend.text = element_text(size = 12),
+      legend.title = element_text(size = 12),
       legend.position = "bottom",
-      legend.title = element_text(size = base_size - 1),
-      legend.text = element_text(size = base_size - 1),
       panel.grid.minor = element_blank(),
-      strip.text = element_text(face = "bold", size = base_size)
+      plot.title = element_blank(),
+      plot.subtitle = element_blank()
     )
 }
 
-save_figure <- function(plot, name, width = 8, height = 5, dpi = 300) {
+save_figure <- function(plot, name, width = 6.5, height = 4.5) {
   png_path <- file.path(figures_dir, paste0(name, ".png"))
   pdf_path <- file.path(figures_dir, paste0(name, ".pdf"))
-  ggsave(png_path, plot, width = width, height = height, dpi = dpi,
+  ggsave(png_path, plot, width = width, height = height, dpi = 600,
          device = agg_png)
-  ggsave(pdf_path, plot, width = width, height = height)
+  ggsave(pdf_path, plot, width = width, height = height,
+         device = cairo_pdf)
   verify_output(png_path)
   verify_output(pdf_path)
 }
