@@ -206,14 +206,10 @@ verify_output(table6_path)
 # --- kableExtra output for Table 6 ---
 save_table(
   event_table, "table6_event_profiles",
-  caption = "Table 6. Event Profiles with Cosine Similarity",
+  caption = "Table 6. Event profiles with cosine similarity",
   footnote = "Cosine similarity between pooled area-share vectors for pre-event, event window, and post-event periods (3-year spans). NA indicates missing comparison window.",
   col_names = c("Event", "Type", "Window Total", "Active Areas",
-                "Cos(Pre, Event)", "Cos(Event, Post)", "Cos(Pre, Post)"),
-  pack_rows = list(
-    list(label = "Crises", start = 1, end = 4),
-    list(label = "Milestones", start = 5, end = 8)
-  )
+                "Cos(Pre, Event)", "Cos(Event, Post)", "Cos(Pre, Post)")
 )
 
 # ============================================================================

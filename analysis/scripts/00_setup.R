@@ -391,26 +391,46 @@ save_figure <- function(plot, name, width = 6.5, height = 4.5) {
 }
 
 # --- Publication table helper (kableExtra) ---
-# Produces HTML + LaTeX PDF outputs for each table
-# Style: booktabs, serif font, compact, horizontal rules only
+# Academic journal style: booktabs, serif font, bold headers, row separators
+# Matches IO/BJPS table formatting conventions
 
 save_table <- function(tbl, name, caption = NULL, footnote = NULL,
                        col_names = NULL, align = NULL,
-                       group_rows = NULL, pack_rows = NULL) {
+                       pack_rows = NULL) {
   html_path  <- file.path(tables_dir, paste0(name, ".html"))
   latex_path <- file.path(tables_dir, paste0(name, ".tex"))
 
   # Column names default to existing names
   if (is.null(col_names)) col_names <- names(tbl)
 
+  # Format caption: bold "TABLE X." prefix
+  # e.g. "Table 1. Description" -> "<b>TABLE 1.</b> Description"
+  html_caption <- caption
+  tex_caption  <- caption
+  if (!is.null(caption)) {
+    # Extract "Table X." or "Table BX." prefix and description
+    m <- regmatches(caption, regexec("^(Table [A-Z0-9]+\\.)(.*)", caption))[[1]]
+    if (length(m) == 3) {
+      html_caption <- paste0("<b>", toupper(m[2]), "</b>", m[3])
+      tex_caption  <- paste0("\\textbf{", toupper(m[2]), "}", m[3])
+    }
+  }
+
+  # --- HTML version ---
   kb <- kbl(tbl, format = "html", booktabs = TRUE,
-            caption = caption, col.names = col_names, align = align,
+            caption = html_caption, col.names = col_names, align = align,
             escape = FALSE) %>%
     kable_styling(
-      bootstrap_options = c("striped", "condensed"),
-      full_width = FALSE, font_size = 13,
+      bootstrap_options = c("condensed"),
+      full_width = FALSE, font_size = 14,
       html_font = '"Times New Roman", Times, serif'
-    )
+    ) %>%
+    row_spec(0, bold = TRUE)  # Bold header row
+
+  # Add horizontal rules between all rows
+  for (i in seq_len(nrow(tbl) - 1)) {
+    kb <- kb %>% row_spec(i, extra_css = "border-bottom: 1px solid #999;")
+  }
 
   # Apply row grouping if specified
   if (!is.null(pack_rows)) {
@@ -428,10 +448,10 @@ save_table <- function(tbl, name, caption = NULL, footnote = NULL,
   save_kable(kb, file = html_path, self_contained = TRUE)
   verify_output(html_path)
 
-  # LaTeX version
+  # --- LaTeX version ---
   kb_tex <- kbl(tbl, format = "latex", booktabs = TRUE,
-                caption = caption, col.names = col_names, align = align,
-                escape = FALSE) %>%
+                caption = tex_caption, col.names = col_names, align = align,
+                escape = FALSE, linesep = "\\midrule") %>%
     kable_styling(latex_options = c("hold_position", "scale_down"),
                   font_size = 10)
 
