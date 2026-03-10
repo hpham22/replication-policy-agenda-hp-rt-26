@@ -31,7 +31,7 @@ fig1 <- ggplot(area_shares, aes(x = area_name, y = share, fill = category)) +
   scale_fill_manual(values = c("Core" = "grey30", "Peripheral" = "grey70"),
                     name = NULL) +
   scale_y_continuous(labels = percent_format(),
-                     expand = expansion(mult = c(0, 0.2))) +
+                     expand = expansion(mult = c(0, 0.35))) +
   coord_flip() +
   labs(x = NULL, y = "Share of total instruments") +
   theme_pub() +

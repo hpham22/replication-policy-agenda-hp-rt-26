@@ -50,7 +50,9 @@ p_bars <- ggplot() +
   labs(x = NULL, y = "Number of instruments") +
   theme_pub() +
   theme(panel.grid.major.x = element_blank(),
-        legend.position = c(0.15, 0.85))
+        legend.position = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = -5))
 
 # Panel B: Active policy areas
 p_active <- ggplot() +
@@ -70,8 +72,21 @@ p_active <- ggplot() +
   theme_pub() +
   theme(panel.grid.major.x = element_blank())
 
-fig2 <- p_bars / p_active + plot_layout(heights = c(2, 1))
+fig2 <- (p_bars + theme(plot.margin = margin(5, 5, 2, 5))) /
+  (p_active + theme(plot.margin = margin(2, 5, 5, 5))) +
+  plot_layout(heights = c(2, 1)) +
+  plot_annotation(
+    caption = paste0(
+      "Notes: Upper panel shows annual instrument counts by core (dark) and peripheral (light) policy areas.\n",
+      "Lower panel shows the number of distinct policy areas receiving at least one instrument per year.\n",
+      "Shaded bands = crisis windows; dashed lines = milestone years."
+    ),
+    theme = theme(
+      plot.caption = element_text(size = 10, family = "serif",
+                                  hjust = 0, lineheight = 1.2)
+    )
+  )
 
-save_figure(fig2, "fig2_annual_timeline", width = 9, height = 6)
+save_figure(fig2, "fig2_annual_timeline", width = 9, height = 7)
 
 cat("\n02_fig2_annual_timeline.R completed.\n")
