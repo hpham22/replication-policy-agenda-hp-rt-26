@@ -297,6 +297,7 @@ p_core <- ggplot() +
            vjust = 2.8, size = 3.5, fontface = "italic", family = "serif") +
   scale_x_continuous(breaks = seq(1970, 2020, 10)) +
   scale_y_continuous(labels = percent_format(),
+                     breaks = seq(0, 1, 0.25),
                      limits = c(0, 1),
                      expand = expansion(mult = c(0.05, 0.2))) +
   labs(x = NULL, y = "Core-area share") +
