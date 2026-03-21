@@ -298,7 +298,7 @@ p_core <- ggplot() +
   scale_x_continuous(breaks = seq(1970, 2020, 10)) +
   scale_y_continuous(labels = percent_format(),
                      limits = c(0, 1),
-                     expand = expansion(mult = c(0, 0.2))) +
+                     expand = expansion(mult = c(0.05, 0.2))) +
   labs(x = NULL, y = "Core-area share") +
   theme_pub() +
   theme(panel.grid.major.x = element_blank())
