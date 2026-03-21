@@ -2,9 +2,9 @@
 
 This repository contains replication codes and dataset for "Policy Agenda Dynamics in ASEAN: Punctuated Equilibrium and the Effects of Crises and Milestones."
 
-**Authors:** Hung Pham and Robert Thomson, Monash University
+**Authors:** Hung Pham, The University of Hong Kong
 
-**Contact:** For inquiries regarding findings, please contact hung.pham1@monash.edu
+**Contact:** For inquiries regarding findings, please contact hpham@hku.hk
 
 **R packages:** MASS, readxl, tidyverse, fitdistrplus, e1071, scales, patchwork
 
