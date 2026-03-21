@@ -1,0 +1,4 @@
+Threshold,N_Core_Areas,Core_Instrument_Share,Core_N,Periph_N,Core_Kurtosis,Periph_Kurtosis,Core_LKurtosis,Periph_LKurtosis,Core_Variance,Periph_Variance,Variance_Ratio
+"Top-2 (15, 20)",2,59.8,61,69,6.3876,62.6077,0.2119,0.7214,1.5463,2.1806,0.7091
+"Baseline Top-3 (10, 15, 20)",3,74.2,77,53,25.4703,12.297,0.3265,0.7176,2.9408,0.0711,41.3512
+"Top-4 (4, 10, 15, 20)",4,78.7,87,43,27.7887,13.7552,0.3256,0.7622,2.6898,0.0664,40.4809

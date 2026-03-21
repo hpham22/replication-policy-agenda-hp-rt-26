@@ -1,0 +1,5 @@
+Period,N,Mean,SD,Kurtosis,L_Kurtosis,Prop_Zeros,Prop_Neg1,t_mu,t_sigma,t_nu,t_note
+Pre-Charter (<=2008),601,-0.0775,0.3819,34.0411,0.6341,0.8769,0.0899,NA,NA,NA,
+Post-Charter (>=2009),171,-0.0213,1.0328,81.3927,0.6382,0.7836,0.1228,NA,NA,NA,
+Pre-Charter restricted,84,-0.5544,0.887,13.7112,0.3207,0.119,0.6429,-1,0,1.01,"converged; jittered: sigma=0.0009, nu=1.01"
+Post-Charter restricted,46,-0.0793,2.0062,24.1556,0.4292,0.1957,0.4565,-0.8998,0.2512,1.01,converged
