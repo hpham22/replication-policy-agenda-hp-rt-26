@@ -1,0 +1,4 @@
+Group,Distribution,N,Mean,SD,Kurtosis,L_Kurtosis,Prop_Zeros,Variance
+Aggregate,Full (incl 0-to-0),772,-0.0651,0.591,170.261,0.6463,0.8562,0.3492
+Core,Full (incl 0-to-0),132,-0.0093,1.3062,42.4905,0.4199,0.5303,1.7062
+Peripheral,Full (incl 0-to-0),640,-0.0766,0.2661,11.2176,0.6516,0.9234,0.0708

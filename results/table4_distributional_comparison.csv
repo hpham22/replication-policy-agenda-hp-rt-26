@@ -1,0 +1,21 @@
+Metric,Aggregate,Core,Peripheral
+N,130,77,53
+Mean,-0.3863,-0.0159,-0.9245
+SD,1.4008,1.7149,0.2667
+Skewness,5.0857,4.1097,3.3087
+Raw Kurtosis (benchmark=3),37.9179,25.4703,12.2970
+"L-kurtosis (tau_4, benchmark=0.123)",0.3721,0.3265,0.7176
+Shapiro-Wilk W,0.465710,0.562698,0.292082
+Shapiro-Wilk p,9.6292e-20,8.5914e-14,1.4838e-14
+t-fit: mu (SE),-1.000000 (NA),-0.597350 (NA),-1.000000 (NA)
+t-fit: sigma (SE),0.000001 (NA),0.474967 (NA),0.000001 (NA)
+t-fit: sigma^2,0.000000,0.225594,0.000000
+t-fit: nu (SE),1.0100 (NA),1.5044 (NA),1.0100 (NA)
+t-fit: Theo. variance,Inf,Inf,Inf
+t-fit: AIC,-248.05,222.04,-1115.23
+t-fit: Note,"converged; jittered: sigma=0.0012, nu=1.01",converged,"converged; jittered: sigma=0.0005, nu=1.01"
+Var. decomp: Total variance,1.9622,,
+Var. decomp: Within-core (% of total),1.7419 (88.8%),,
+Var. decomp: Within-peripheral (% of total),0.0290 (1.5%),,
+Var. decomp: Weighted within (% of total),1.7709 (90.3%),,
+Var. decomp: Between-group (% of total),0.1913 (9.7%),,
