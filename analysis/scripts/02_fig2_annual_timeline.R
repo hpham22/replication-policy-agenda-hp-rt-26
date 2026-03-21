@@ -36,15 +36,18 @@ p_bars <- ggplot() +
   geom_vline(xintercept = milestone_xs, linetype = "dashed",
              colour = "grey50", linewidth = 0.4) +
   geom_col(data = bar_data, aes(x = year, y = count, fill = category),
-           width = 0.7, colour = "black", linewidth = 0.15) +
+           width = 0.7, colour = "black", linewidth = 0.15,
+           position = position_stack(reverse = FALSE)) +
   scale_fill_manual(values = c("Core" = "grey30", "Peripheral" = "grey70"),
                     name = NULL) +
   annotate("text", x = c(1997.5, 2004.5, 2009, 2020),
            y = Inf, label = c("AFC", "Tsunami", "GFC", "COVID"),
            vjust = 1.5, size = 3.5, fontface = "italic", family = "serif") +
-  annotate("text", x = c(1976, 1992, 2007, 2015),
-           y = Inf, label = c("TAC/Summit", "AFTA", "Charter", "Community"),
+  annotate("text", x = c(1976, 1992, 2015),
+           y = Inf, label = c("TAC/Summit", "AFTA", "Community"),
            vjust = 3, size = 3.5, fontface = "italic", family = "serif") +
+  annotate("text", x = 2007, y = Inf, label = "Charter",
+           vjust = 5.5, size = 3.5, fontface = "italic", family = "serif") +
   scale_x_continuous(breaks = seq(1970, 2020, 5)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(x = NULL, y = "Number of instruments") +

@@ -270,10 +270,12 @@ fig4 <- ggplot(plot_df, aes(x = pct_change)) +
                  linewidth = 0.2) +
   geom_line(data = norm_data, aes(x = x, y = y),
             linetype = "dashed", colour = "black", linewidth = 0.5) +
-  geom_text(data = annot_labels,
-            aes(x = Inf, y = Inf, label = label),
-            hjust = 1.1, vjust = 1.3, size = 3.5, family = "serif",
-            inherit.aes = FALSE) +
+  geom_label(data = annot_labels,
+             aes(x = Inf, y = Inf, label = label),
+             hjust = 1.05, vjust = 1.1, size = 3.5, family = "serif",
+             inherit.aes = FALSE,
+             fill = "white", colour = "black",
+             label.size = 0.4, label.padding = unit(0.4, "lines")) +
   facet_wrap(~ panel, ncol = 2, scales = "free_y") +
   scale_x_continuous(breaks = c(-1, seq(0, ceiling(max(plot_df$pct_change)), by = 2))) +
   coord_cartesian(xlim = c(-1.5, max(plot_df$pct_change) + 0.5)) +
