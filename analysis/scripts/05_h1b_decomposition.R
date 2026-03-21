@@ -287,14 +287,18 @@ p_core <- ggplot() +
   geom_hline(yintercept = 0.75, linetype = "dotted", colour = "grey50") +
   annotate("text", x = c(1997.5, 2004.5, 2009, 2020),
            y = Inf, label = c("AFC", "Tsunami", "GFC", "COVID"),
-           vjust = 1.5, size = 3.5, fontface = "italic", family = "serif") +
-  annotate("text", x = c(1976, 1992, 2007, 2015),
-           y = Inf, label = c("TAC/Summit", "AFTA", "Charter", "Community"),
-           vjust = 3, size = 3.5, fontface = "italic", family = "serif") +
+           vjust = 1.3, size = 3.5, fontface = "italic", family = "serif") +
+  annotate("text", x = c(1976, 1992),
+           y = Inf, label = c("TAC/Summit", "AFTA"),
+           vjust = 2.8, size = 3.5, fontface = "italic", family = "serif") +
+  annotate("text", x = 2007, y = Inf, label = "Charter",
+           vjust = 4.3, size = 3.5, fontface = "italic", family = "serif") +
+  annotate("text", x = 2015, y = Inf, label = "Community",
+           vjust = 2.8, size = 3.5, fontface = "italic", family = "serif") +
   scale_x_continuous(breaks = seq(1970, 2020, 10)) +
   scale_y_continuous(labels = percent_format(),
                      limits = c(0, 1),
-                     expand = expansion(mult = c(0, 0.1))) +
+                     expand = expansion(mult = c(0, 0.2))) +
   labs(x = NULL, y = "Core-area share") +
   theme_pub() +
   theme(panel.grid.major.x = element_blank())

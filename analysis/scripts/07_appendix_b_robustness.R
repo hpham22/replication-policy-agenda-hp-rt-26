@@ -461,9 +461,11 @@ figB1 <- ggplot() +
   geom_line(data = normal_overlay_pp,
             aes(x = x, y = density),
             linetype = "dashed", colour = "black", linewidth = 0.8) +
-  annotate("text", x = max(pooled_pctpct) * 0.5, y = Inf,
+  annotate("label", x = max(pooled_pctpct) * 0.5, y = Inf,
            label = annot_pp, hjust = 0, vjust = 1.5,
-           size = 4, family = "serif") +
+           size = 4, family = "serif",
+           fill = "white", label.size = 0.3,
+           label.padding = unit(0.4, "lines")) +
   labs(x = "First difference in proportional share", y = "Density") +
   theme_pub()
 
