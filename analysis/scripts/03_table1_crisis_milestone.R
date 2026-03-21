@@ -14,30 +14,30 @@ table1 <- tibble(
     "Global Financial Crisis / Cyclone Nargis",
     "COVID-19",
     "Treaty of Amity / First Summit",
-    "AFTA Agreement",
+    "ASEAN Free Trade Area Agreement",
     "ASEAN Charter",
     "ASEAN Community"
   ),
   Type = c(rep("Crisis", 4), rep("Milestone", 4)),
   Window = c(
-    "1997-1998",
-    "2004-2005",
-    "2008-2009",
+    "1997-98",
+    "2004-05",
+    "2008-09",
     "2020",
-    "1976-1977",
-    "1992-1993",
-    "2007-2008",
-    "2015-2016"
+    "1976-77",
+    "1992-93",
+    "2007-08",
+    "2015-16"
   ),
   Rationale = c(
-    "Regional financial contagion; IMF interventions across ASEAN",
-    "Tsunami devastated ASEAN members; AADMER adopted 2005",
-    "Global recession + Cyclone Nargis (2008); 2008 classified as milestone for year-type analysis",
-    "Pandemic; data ends 2020, no post-event comparison",
-    "TAC signed 1976; first ASEAN Summit",
-    "AFTA framework adopted; 1993 has zero output",
-    "Charter signed Nov 2007, entered force Dec 2008; 2007-08 overlap with GFC onset",
-    "ASEAN Community established Dec 2015"
+    "Regional economic collapse; triggered institutional reform",
+    "Transboundary disaster; AADMER adopted 2005",
+    "Global economic shock; humanitarian crisis in Myanmar",
+    "Pandemic; truncated (data ends 2020)",
+    "First Summit; TAC and Declaration of ASEAN Concord",
+    "Free trade area established",
+    "Constitutional document; entered force Dec 2008",
+    "Formal community inauguration"
   )
 )
 
@@ -47,5 +47,11 @@ print(table1, width = 120)
 table1_path <- file.path(tables_dir, "table1_classifications.csv")
 write_csv(table1, table1_path)
 verify_output(table1_path)
+
+# --- kableExtra output ---
+save_table(
+  table1, "table1_classifications",
+  caption = "Table 1. Crisis and milestone classifications"
+)
 
 cat("\n03_table1_crisis_milestone.R completed.\n")

@@ -31,11 +31,14 @@ fig1 <- ggplot(area_shares, aes(x = area_name, y = share, fill = category)) +
   scale_fill_manual(values = c("Core" = "grey30", "Peripheral" = "grey70"),
                     name = NULL) +
   scale_y_continuous(labels = percent_format(),
-                     expand = expansion(mult = c(0, 0.2))) +
+                     expand = expansion(mult = c(0, 0.35))) +
   coord_flip() +
   labs(x = NULL, y = "Share of total instruments") +
   theme_pub() +
-  theme(legend.position = c(0.8, 0.3))
+  theme(legend.position = c(0.8, 0.3),
+        legend.background = element_rect(colour = "black", fill = "white",
+                                          linewidth = 0.5),
+        legend.key = element_rect(colour = "black", linewidth = 0.3))
 
 save_figure(fig1, "fig1_attention_distribution", width = 6.5, height = 5)
 

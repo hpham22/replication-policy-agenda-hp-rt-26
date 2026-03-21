@@ -36,21 +36,26 @@ p_bars <- ggplot() +
   geom_vline(xintercept = milestone_xs, linetype = "dashed",
              colour = "grey50", linewidth = 0.4) +
   geom_col(data = bar_data, aes(x = year, y = count, fill = category),
-           width = 0.7, colour = "black", linewidth = 0.15) +
+           width = 0.7, colour = "black", linewidth = 0.15,
+           position = position_stack(reverse = FALSE)) +
   scale_fill_manual(values = c("Core" = "grey30", "Peripheral" = "grey70"),
                     name = NULL) +
   annotate("text", x = c(1997.5, 2004.5, 2009, 2020),
            y = Inf, label = c("AFC", "Tsunami", "GFC", "COVID"),
            vjust = 1.5, size = 3.5, fontface = "italic", family = "serif") +
-  annotate("text", x = c(1976, 1992, 2007, 2015),
-           y = Inf, label = c("TAC/Summit", "AFTA", "Charter", "Community"),
+  annotate("text", x = c(1976, 1992, 2015),
+           y = Inf, label = c("TAC/Summit", "AFTA", "Community"),
            vjust = 3, size = 3.5, fontface = "italic", family = "serif") +
+  annotate("text", x = 2007, y = Inf, label = "Charter",
+           vjust = 5.5, size = 3.5, fontface = "italic", family = "serif") +
   scale_x_continuous(breaks = seq(1970, 2020, 5)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   labs(x = NULL, y = "Number of instruments") +
   theme_pub() +
   theme(panel.grid.major.x = element_blank(),
-        legend.position = c(0.15, 0.85))
+        legend.position = "bottom",
+        legend.justification = "left",
+        legend.margin = margin(t = -5))
 
 # Panel B: Active policy areas
 p_active <- ggplot() +
@@ -70,8 +75,21 @@ p_active <- ggplot() +
   theme_pub() +
   theme(panel.grid.major.x = element_blank())
 
-fig2 <- p_bars / p_active + plot_layout(heights = c(2, 1))
+fig2 <- (p_bars + theme(plot.margin = margin(5, 5, 2, 5))) /
+  (p_active + theme(plot.margin = margin(2, 5, 5, 5))) +
+  plot_layout(heights = c(2, 1)) +
+  plot_annotation(
+    caption = paste0(
+      "Notes: Upper panel shows annual instrument counts by core (dark) and peripheral (light) policy areas.\n",
+      "Lower panel shows the number of distinct policy areas receiving at least one instrument per year.\n",
+      "Shaded bands = crisis windows; dashed lines = milestone years."
+    ),
+    theme = theme(
+      plot.caption = element_text(size = 10, family = "serif",
+                                  hjust = 0, lineheight = 1.2)
+    )
+  )
 
-save_figure(fig2, "fig2_annual_timeline", width = 9, height = 6)
+save_figure(fig2, "fig2_annual_timeline", width = 9, height = 7)
 
 cat("\n02_fig2_annual_timeline.R completed.\n")

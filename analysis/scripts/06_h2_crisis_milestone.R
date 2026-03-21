@@ -90,6 +90,27 @@ table5_path <- file.path(tables_dir, "table5_year_type_comparison.csv")
 write_csv(table5, table5_path)
 verify_output(table5_path)
 
+# --- kableExtra output for Table 5 ---
+table5_display <- table5 %>%
+  mutate(across(where(is.numeric), ~ round(., 3))) %>%
+  mutate(
+    `Output (mean ± SD)` = sprintf("%.1f ± %.1f", mean_total, sd_total),
+    `Active Areas (mean ± SD)` = sprintf("%.1f ± %.1f", mean_active, sd_active),
+    `HHI (mean ± SD)` = sprintf("%.3f ± %.3f", mean_hhi, sd_hhi),
+    `Core Share (mean ± SD)` = sprintf("%.3f ± %.3f", mean_core_prop, sd_core_prop),
+    `Entropy (mean ± SD)` = sprintf("%.3f ± %.3f", mean_entropy, sd_entropy)
+  ) %>%
+  select(Year_Type = year_type, N = n_years,
+         `Output (mean ± SD)`, `Active Areas (mean ± SD)`,
+         `HHI (mean ± SD)`, `Core Share (mean ± SD)`,
+         `Entropy (mean ± SD)`)
+
+save_table(
+  table5_display, "table5_year_type_comparison",
+  caption = "Table 5. Year-Type Comparison of Agenda Characteristics",
+  footnote = "Years with zero output excluded. Crisis: 1997-98, 2004-05, 2009, 2020. Milestone: 1976-77, 1992-93, 2007-08, 2015-16."
+)
+
 # ============================================================================
 # T-distribution by year type (restricted)
 # ============================================================================
@@ -182,6 +203,15 @@ table6_path <- file.path(tables_dir, "table6_event_profiles.csv")
 write_csv(event_table, table6_path)
 verify_output(table6_path)
 
+# --- kableExtra output for Table 6 ---
+save_table(
+  event_table, "table6_event_profiles",
+  caption = "Table 6. Event profiles with cosine similarity",
+  footnote = "Cosine similarity between pooled area-share vectors for pre-event, event window, and post-event periods (3-year spans). NA indicates missing comparison window.",
+  col_names = c("Event", "Type", "Window Total", "Active Areas",
+                "Cos(Pre, Event)", "Cos(Event, Post)", "Cos(Pre, Post)")
+)
+
 # ============================================================================
 # Figure 4 — Faceted distribution comparison (2x2)
 # ============================================================================
@@ -240,11 +270,14 @@ fig4 <- ggplot(plot_df, aes(x = pct_change)) +
                  linewidth = 0.2) +
   geom_line(data = norm_data, aes(x = x, y = y),
             linetype = "dashed", colour = "black", linewidth = 0.5) +
-  geom_text(data = annot_labels,
-            aes(x = Inf, y = Inf, label = label),
-            hjust = 1.1, vjust = 1.3, size = 3.5, family = "serif",
-            inherit.aes = FALSE) +
+  geom_label(data = annot_labels,
+             aes(x = Inf, y = Inf, label = label),
+             hjust = 1.05, vjust = 1.1, size = 3.5, family = "serif",
+             inherit.aes = FALSE,
+             fill = "white", colour = "black",
+             label.size = 0.4, label.padding = unit(0.4, "lines")) +
   facet_wrap(~ panel, ncol = 2, scales = "free_y") +
+  scale_x_continuous(breaks = c(-1, seq(0, ceiling(max(plot_df$pct_change)), by = 2))) +
   coord_cartesian(xlim = c(-1.5, max(plot_df$pct_change) + 0.5)) +
   labs(x = "Annual percentage change", y = "Density") +
   theme_pub()
