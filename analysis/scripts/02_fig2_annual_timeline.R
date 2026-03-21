@@ -37,7 +37,7 @@ p_bars <- ggplot() +
              colour = "grey50", linewidth = 0.4) +
   geom_col(data = bar_data, aes(x = year, y = count, fill = category),
            width = 0.7, colour = "black", linewidth = 0.15,
-           position = position_stack(reverse = FALSE)) +
+           position = position_stack(reverse = TRUE)) +
   scale_fill_manual(values = c("Core" = "grey30", "Peripheral" = "grey70"),
                     name = NULL) +
   annotate("text", x = c(1997.5, 2004.5, 2009, 2020),
@@ -77,18 +77,7 @@ p_active <- ggplot() +
 
 fig2 <- (p_bars + theme(plot.margin = margin(5, 5, 2, 5))) /
   (p_active + theme(plot.margin = margin(2, 5, 5, 5))) +
-  plot_layout(heights = c(2, 1)) +
-  plot_annotation(
-    caption = paste0(
-      "Notes: Upper panel shows annual instrument counts by core (dark) and peripheral (light) policy areas.\n",
-      "Lower panel shows the number of distinct policy areas receiving at least one instrument per year.\n",
-      "Shaded bands = crisis windows; dashed lines = milestone years."
-    ),
-    theme = theme(
-      plot.caption = element_text(size = 10, family = "serif",
-                                  hjust = 0, lineheight = 1.2)
-    )
-  )
+  plot_layout(heights = c(2, 1))
 
 save_figure(fig2, "fig2_annual_timeline", width = 9, height = 7)
 
